@@ -113,6 +113,18 @@ internal static class Scenarios
             (project, package) => WithInstance(project, package, "sparkle-wake",
                 """{"lengthPx":110,"maxTiltDeg":22,"spinHz":0.6,"driftSpeedPx":8,"layer":"behind"}"""),
             TrailTimes),
+
+        new("RefractivePrismCrystal", "default",
+            (project, package) => WithInstance(project, package, "refractive-prism-crystal"),
+            DefaultTimes),
+        new("RefractivePrismCrystal", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "refractive-prism-crystal"),
+            ExitTimes,
+            WithAudioAnalysis: true),
+        new("RefractivePrismCrystal", "below-ruby-exit",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "refractive-prism-crystal",
+                """{"backdropSource":"below"}"""),
+            ExitTimes),
     ];
 
     internal static ProjectAudioAnalysis CreateSyntheticAudioAnalysis(long durationUs)

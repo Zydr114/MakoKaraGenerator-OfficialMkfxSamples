@@ -1,0 +1,34 @@
+{
+  "programVersion": 1,
+  "source": "shaders/refractive-prism.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    { "name": "timeSeconds", "type": "float" },
+    { "name": "canvasSize", "type": "float2" },
+    { "name": "enterAlpha", "type": "float" },
+    { "name": "exitProgress", "type": "float" },
+    { "name": "allSung", "type": "float" },
+    { "name": "refractionPx", "type": "float" },
+    { "name": "dispersionPx", "type": "float" },
+    { "name": "chromaBoost", "type": "float" },
+    { "name": "causticStrength", "type": "float" },
+    { "name": "boilingStrength", "type": "float" },
+    { "name": "strokeWidthPx", "type": "float" },
+    { "name": "contrastThreshold", "type": "float" },
+    { "name": "frostOpacity", "type": "float" },
+    { "name": "dissolveScatterPx", "type": "float" },
+    { "name": "audioEnergy", "type": "float" },
+    { "name": "sungCutoffX", "type": "float" },
+    { "name": "lineBounds", "type": "float4" },
+    { "name": "slotCount", "type": "int" },
+    { "name": "slotRects", "type": "float4", "arrayLength": 9 },
+    { "name": "slotStates", "type": "float4", "arrayLength": 9 }
+  ],
+  "children": [
+    { "name": "original", "type": "color" },
+    { "name": "glyph", "type": "coverage" },
+    { "name": "bgSharp", "type": "color" },
+    { "name": "bgSmooth", "type": "color" },
+    { "name": "bgFrosted", "type": "color" }
+  ]
+}

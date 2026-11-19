@@ -1,0 +1,342 @@
+uniform float timeSeconds;
+uniform float2 canvasSize;
+uniform float enterAlpha;
+uniform float exitProgress;
+uniform float allSung;
+uniform float refractionPx;
+uniform float dispersionPx;
+uniform float chromaBoost;
+uniform float causticStrength;
+uniform float boilingStrength;
+uniform float strokeWidthPx;
+uniform float contrastThreshold;
+uniform float frostOpacity;
+uniform float dissolveScatterPx;
+uniform float audioEnergy;
+uniform float sungCutoffX;
+uniform float4 lineBounds;
+uniform int slotCount;
+uniform float4 slotRects[9];
+uniform float4 slotStates[9];
+
+uniform shader original;
+uniform shader glyph;
+uniform shader bgSharp;
+uniform shader bgSmooth;
+uniform shader bgFrosted;
+
+float3 straightRgb(half4 s) {
+    return s.a > 0.0001 ? clamp(float3(s.rgb) / float(s.a), 0.0, 1.0) : float3(0.0);
+}
+
+float luma(float3 rgb) {
+    return dot(rgb, float3(0.2126, 0.7152, 0.0722));
+}
+
+float2 hash2(float2 p) {
+    float n1 = fract(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
+    float n2 = fract(sin(dot(p, float2(269.5, 183.3))) * 43758.5453);
+    return float2(n1, n2);
+}
+
+float hash1(float2 p) {
+    return fract(sin(dot(p, float2(41.1, 289.7))) * 29432.17);
+}
+
+float3 rgbToHsv(float3 c) {
+    float4 K = float4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    float4 p = c.g < c.b ? float4(c.bg, K.wz) : float4(c.gb, K.xy);
+    float4 q = c.r < p.x ? float4(p.xyw, c.r) : float4(c.r, p.yzx);
+    float d = q.x - min(q.w, q.y);
+    float e = 1e-5;
+    return float3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+float3 hsvToRgb(float3 c) {
+    float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    float3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+float3 sampleSmoothSafe(float2 pos) {
+    half4 s = bgSmooth.eval(pos);
+    return s.a > 0.02 ? straightRgb(s) : straightRgb(bgSharp.eval(pos));
+}
+
+float3 sampleFrostedSafe(float2 pos) {
+    half4 s = bgFrosted.eval(pos);
+    return s.a > 0.02 ? straightRgb(s) : sampleSmoothSafe(pos);
+}
+
+half4 main(float2 p) {
+    // 保持对 original 的采样以替换全部源层，正常背景模式下不混合其像素。
+    half4 origSample = original.eval(p);
+    float origTouch = float(origSample.a) * 0.0;
+
+    float cov = clamp(float(glyph.eval(p).a), 0.0, 1.0);
+    float covL = float(glyph.eval(p - float2(1.5, 0.0)).a);
+    float covR = float(glyph.eval(p + float2(1.5, 0.0)).a);
+    float covU = float(glyph.eval(p - float2(0.0, 1.5)).a);
+    float covD = float(glyph.eval(p + float2(0.0, 1.5)).a);
+
+    float2 grad = float2(covL - covR, covU - covD);
+    float gradLen = length(grad);
+    float2 normal = gradLen > 0.001 ? grad / gradLen : float2(0.0, 0.0);
+    float innerRim = clamp(gradLen * 1.45, 0.0, 1.0);
+
+    // 8 邻域轮廓膨胀采样：构造极细自适应反差描边与外溢光环遮罩。
+    float sw = clamp(strokeWidthPx, 0.4, 4.0);
+    float2 dAxis = float2(sw, 0.0);
+    float2 dDiag = float2(sw * 0.7071, sw * 0.7071);
+    float dilate = 0.0;
+    dilate = max(dilate, float(glyph.eval(p + dAxis).a));
+    dilate = max(dilate, float(glyph.eval(p - dAxis).a));
+    dilate = max(dilate, float(glyph.eval(p + dAxis.yx).a));
+    dilate = max(dilate, float(glyph.eval(p - dAxis.yx).a));
+    dilate = max(dilate, float(glyph.eval(p + dDiag).a));
+    dilate = max(dilate, float(glyph.eval(p - dDiag).a));
+    dilate = max(dilate, float(glyph.eval(p + float2(dDiag.x, -dDiag.y)).a));
+    dilate = max(dilate, float(glyph.eval(p + float2(-dDiag.x, dDiag.y)).a));
+    float strokeRing = clamp(dilate - cov, 0.0, 1.0);
+
+    // 外围色散/焦散感测环（最远约 12px）
+    float haloR = clamp(max(dispersionPx * 0.75, 4.0), 2.0, 14.0);
+    float haloCov = 0.0;
+    haloCov += float(glyph.eval(p + float2(haloR, 0.0)).a);
+    haloCov += float(glyph.eval(p - float2(haloR, 0.0)).a);
+    haloCov += float(glyph.eval(p + float2(0.0, haloR)).a);
+    haloCov += float(glyph.eval(p - float2(0.0, haloR)).a);
+    haloCov += float(glyph.eval(p + float2(haloR * 0.7, haloR * 0.7)).a);
+    haloCov += float(glyph.eval(p - float2(haloR * 0.7, haloR * 0.7)).a);
+    haloCov += float(glyph.eval(p + float2(haloR * 0.7, -haloR * 0.7)).a);
+    haloCov += float(glyph.eval(p + float2(-haloR * 0.7, haloR * 0.7)).a);
+    float outerHalo = clamp((haloCov / 8.0) * (1.0 - cov * 0.85), 0.0, 1.0);
+
+    // 解析当前像素所属音节状态：待唱 / 聚光激活 / 凝固毛玻璃
+    float solidify = allSung > 0.5 ? 1.0 : (p.x <= sungCutoffX ? 1.0 : 0.0);
+    float bestActive = 0.0;
+    float bestBoiling = 0.0;
+    float spotlightMask = 0.0;
+    float2 spotDir = float2(0.0, 0.0);
+    float2 bestCenter = p;
+
+    float boxMargin = clamp(dispersionPx + 12.0, 8.0, 28.0);
+    for (int i = 0; i < 9; i++) {
+        if (i >= slotCount) {
+            break;
+        }
+        float4 rect = slotRects[i];
+        float4 st = slotStates[i];
+        float2 center = 0.5 * (rect.xy + rect.zw);
+        float2 halfExt = max(0.5 * (rect.zw - rect.xy), float2(8.0, 8.0));
+
+        float2 distOut = max(max(rect.xy - p, p - rect.zw), float2(0.0));
+        float inStrict = step(distOut.x + distOut.y, 0.001);
+        float boxWeight = 1.0 - smoothstep(0.0, boxMargin, length(distOut));
+
+        if (inStrict > 0.5) {
+            solidify = max(solidify, st.y);
+            if (st.y < 0.05 && st.x < 0.05 && allSung < 0.5) {
+                solidify = min(solidify, st.y);
+            }
+        }
+
+        // 聚光穿透分布：由当前激活音节中心向四周辐射，替代从左往右平涂扫光。
+        float2 rel = (p - center) / (halfExt * 1.35);
+        float radial = clamp(1.0 - dot(rel, rel) * 0.68, 0.0, 1.0);
+        float activeHere = st.x * boxWeight;
+        if (activeHere > bestActive) {
+            bestActive = activeHere;
+            bestBoiling = st.z * boxWeight;
+            spotlightMask = mix(0.42, 1.15, radial);
+            bestCenter = center;
+            float2 delta = p - center;
+            float dLen = length(delta);
+            spotDir = dLen > 0.001 ? delta / dLen : normal;
+        }
+    }
+
+    // 退场期间强制全行完成凝固基态，再沿背景明暗交界线碎裂
+    solidify = clamp(max(solidify, smoothstep(0.0, 0.15, exitProgress)), 0.0, 1.0);
+    float waitingMask = clamp((1.0 - bestActive) * (1.0 - solidify), 0.0, 1.0);
+
+    // 1. 折射与沸水涟漪扭曲向量
+    float slowPhase = timeSeconds * 1.9;
+    float2 gentleWave = float2(
+        sin(0.042 * p.y + 0.016 * p.x + slowPhase),
+        cos(0.038 * p.x - 0.014 * p.y - slowPhase * 0.82)
+    ) * 0.45;
+
+    float boilPhase = timeSeconds * (12.0 + 10.0 * audioEnergy);
+    float2 boilWave = float2(
+        sin(0.15 * p.y + 0.09 * p.x + boilPhase) + 0.65 * cos(0.26 * p.x - 0.13 * p.y - boilPhase * 1.25),
+        cos(0.16 * p.x - 0.08 * p.y - boilPhase * 1.08) - 0.65 * sin(0.24 * p.y + 0.12 * p.x + boilPhase * 1.33)
+    );
+    float boilFactor = clamp(bestBoiling * boilingStrength, 0.0, 2.2);
+
+    float2 lensNormal = length(normal) > 0.01 ? normal : spotDir * 0.6;
+    float baseAmp = refractionPx * mix(0.58, 0.18, solidify);
+    float activeAmp = refractionPx * (0.75 + 1.15 * boilFactor) * bestActive;
+    float2 refractDir = lensNormal * (0.65 * innerRim + 0.35) + gentleWave + boilWave * (0.52 * boilFactor);
+    float2 totalRefractOffset = refractDir * clamp(baseAmp + activeAmp, 0.0, 26.0);
+
+    half4 sharpCenter = bgSharp.eval(p);
+    float bgAlpha = clamp(float(sharpCenter.a), 0.0, 1.0);
+    half4 sharpRefract = bgSharp.eval(p + totalRefractOffset);
+    float3 refractedRgb = straightRgb(sharpRefract);
+
+    // 2. 激活态：实时提取正下方音节区域主色调（以音节中心附近高饱和度加权采样为主）并拉高明度与纯度
+    float2 domAnchor = mix(p, clamp(bestCenter, p - float2(36.0), p + float2(36.0)), 0.72);
+    float3 frostLocal = sampleFrostedSafe(domAnchor);
+    float3 f1 = sampleFrostedSafe(clamp(domAnchor + float2(14.0, 0.0), p - float2(48.0), p + float2(48.0)));
+    float3 f2 = sampleFrostedSafe(clamp(domAnchor - float2(14.0, 0.0), p - float2(48.0), p + float2(48.0)));
+    float3 f3 = sampleFrostedSafe(clamp(domAnchor + float2(0.0, 14.0), p - float2(48.0), p + float2(48.0)));
+    float3 f4 = sampleFrostedSafe(clamp(domAnchor - float2(0.0, 14.0), p - float2(48.0), p + float2(48.0)));
+    float w0 = max(frostLocal.r, max(frostLocal.g, frostLocal.b)) - min(frostLocal.r, min(frostLocal.g, frostLocal.b)) + 0.08;
+    float w1 = max(f1.r, max(f1.g, f1.b)) - min(f1.r, min(f1.g, f1.b)) + 0.08;
+    float w2 = max(f2.r, max(f2.g, f2.b)) - min(f2.r, min(f2.g, f2.b)) + 0.08;
+    float w3 = max(f3.r, max(f3.g, f3.b)) - min(f3.r, min(f3.g, f3.b)) + 0.08;
+    float w4 = max(f4.r, max(f4.g, f4.b)) - min(f4.r, min(f4.g, f4.b)) + 0.08;
+    float3 dominantRgb = (frostLocal * w0 + f1 * w1 + f2 * w2 + f3 * w3 + f4 * w4) / (w0 + w1 + w2 + w3 + w4);
+
+    float3 domHsv = rgbToHsv(dominantRgb);
+    float boostAmt = clamp(chromaBoost, 0.0, 1.5);
+    // 若局部背景接近无色灰阶，赋予冷棱镜青蓝晶色以免失去光学提纯感；彩色背景则锁住原始主色相并大幅拉高纯度/明度。
+    float isGray = 1.0 - smoothstep(0.04, 0.16, domHsv.y);
+    float targetHue = mix(domHsv.x, 0.56, isGray * 0.75);
+    float targetSat = clamp(domHsv.y * (1.35 + 0.65 * boostAmt) + 0.34 * boostAmt, 0.0, 1.0);
+    float targetVal = clamp(mix(domHsv.z, 0.98, 0.55 + 0.30 * min(boostAmt, 1.0)), 0.0, 1.0);
+    float3 purifiedCrystal = hsvToRgb(float3(targetHue, targetSat, targetVal));
+
+    // 3. 强烈红蓝光学色散与焦散亮斑（激活态集中在笔画边缘并微幅外溢）
+    float dispAmt = dispersionPx * bestActive;
+    float2 dispAxis = length(normal) > 0.05 ? normal : (length(spotDir) > 0.05 ? spotDir : float2(1.0, 0.0));
+    half4 bgR = bgSharp.eval(p + totalRefractOffset + dispAxis * dispAmt);
+    half4 bgB = bgSharp.eval(p + totalRefractOffset - dispAxis * dispAmt);
+    float gR = float(glyph.eval(p - dispAxis * (dispAmt * 0.55)).a);
+    float gB = float(glyph.eval(p + dispAxis * (dispAmt * 0.55)).a);
+
+    float3 prismDispersion = float3(
+        straightRgb(bgR).r * 0.55 + purifiedCrystal.r * 0.65,
+        refractedRgb.g * 0.55 + purifiedCrystal.g * 0.45,
+        straightRgb(bgB).b * 0.55 + purifiedCrystal.b * 0.70
+    );
+    float3 edgeRedBlue = float3(1.0, 0.22, 0.18) * gR + float3(0.16, 0.56, 1.0) * gB;
+
+    // 焦散干涉亮斑：沿轮廓内斜边与外缘闪烁
+    float cWave1 = sin(0.17 * p.x + 0.21 * p.y - timeSeconds * 5.2 + boilFactor * 2.0);
+    float cWave2 = cos(0.13 * p.x - 0.19 * p.y + timeSeconds * 4.1 - boilFactor * 1.7);
+    float causticPattern = pow(clamp(0.5 + 0.5 * cWave1 * cWave2, 0.0, 1.0), 5.0);
+    float causticZone = clamp(innerRim * 1.15 + outerHalo * 0.95, 0.0, 1.0);
+    float3 causticGlow = mix(purifiedCrystal, float3(1.0, 0.99, 0.97), 0.55)
+        * (causticPattern * causticStrength * bestActive * causticZone * 1.45);
+
+    // 4. 凝固毛玻璃质感（已唱状态）
+    float2 cell = floor(p);
+    float2 grainJit = (hash2(cell) - 0.5) * 2.6;
+    float3 frostedSample = sampleFrostedSafe(p + grainJit);
+    float microGrain = (hash1(cell + float2(19.3, 47.7)) - 0.5) * 0.06;
+    float satinSlope = pow(0.5 + 0.5 * sin(0.015 * p.x + 0.02 * p.y), 2.5);
+    float3 frostedColor = clamp(mix(frostedSample, float3(0.90, 0.94, 0.99), 0.30) + float3(microGrain + satinSlope * 0.10), 0.0, 1.0);
+
+    // 5. 融合笔画内部颜色（待唱折射 -> 聚光提纯晶体 -> 凝固毛玻璃）
+    float2 lightDir = normalize(float2(-0.65, -0.75));
+    float specEdge = pow(clamp(dot(normal, lightDir), 0.0, 1.0), 1.8) * innerRim;
+    float3 waitingGlass = clamp(refractedRgb + float3(0.08 * innerRim + 0.22 * specEdge), 0.0, 1.0);
+    float3 activeCrystal = clamp(mix(prismDispersion, purifiedCrystal, clamp(0.45 * spotlightMask + 0.25 * innerRim, 0.0, 0.92))
+        + float3(0.28 * pow(spotlightMask, 2.0) * innerRim + 0.16 * specEdge), 0.0, 1.0);
+
+    float3 interiorRgb = mix(waitingGlass, frostedColor, solidify);
+    interiorRgb = mix(interiorRgb, activeCrystal, bestActive);
+
+    // 6. 极细局部自适应反差描边（随正下方局部平滑亮度平滑翻转）
+    float3 localSmoothBg = sampleSmoothSafe(p);
+    float bgLuma = luma(localSmoothBg);
+    float brightFactor = smoothstep(contrastThreshold - 0.14, contrastThreshold + 0.14, bgLuma);
+    float3 coolWhiteRim = float3(0.88, 0.96, 1.0);
+    float3 darkFrostRim = clamp(float3(0.06, 0.08, 0.12) + float3(microGrain * 0.5), 0.0, 1.0);
+    float3 adaptiveStrokeRgb = mix(coolWhiteRim, darkFrostRim, brightFactor);
+    adaptiveStrokeRgb = mix(adaptiveStrokeRgb, mix(purifiedCrystal, float3(1.0), 0.45), bestActive * 0.65);
+
+    // 待唱态下内部近乎透明（依靠微弱折射率+微光与自适应描边显形），激活和凝固态提升主体可见度
+    float waitingBodyAlpha = clamp(0.22 + 0.55 * innerRim + 0.25 * clamp(length(totalRefractOffset) / max(refractionPx, 1.0), 0.0, 1.0), 0.0, 0.85);
+    float activeBodyAlpha = clamp(0.88 + 0.12 * bestActive, 0.0, 1.0);
+    float frostBodyAlpha = clamp(frostOpacity, 0.15, 1.0);
+    float bodyAlpha = mix(waitingBodyAlpha, frostBodyAlpha, solidify);
+    bodyAlpha = mix(bodyAlpha, activeBodyAlpha, bestActive);
+
+    float strokeAlpha = strokeRing * mix(0.88, 0.72, brightFactor * 0.4) * mix(1.0, 0.75, solidify * (1.0 - bestActive));
+    float dispEdgeAlpha = clamp((gR + gB) * 0.55 * (1.0 - cov) * bestActive, 0.0, 0.85);
+    float causticAlpha = clamp(length(causticGlow) * 0.55 * outerHalo, 0.0, 0.75);
+
+    // 7. 退场态：顺着当前背景明暗交界线碎化为折光尘埃，局部趋向高光消融
+    float exitFade = 1.0;
+    float3 outRgb = float3(0.0);
+    float outAlpha = 0.0;
+
+    if (exitProgress > 0.001) {
+        float lL = luma(sampleSmoothSafe(p - float2(2.5, 0.0)));
+        float lR = luma(sampleSmoothSafe(p + float2(2.5, 0.0)));
+        float lU = luma(sampleSmoothSafe(p - float2(0.0, 2.5)));
+        float lD = luma(sampleSmoothSafe(p + float2(0.0, 2.5)));
+        float2 bgGrad = float2(lR - lL, lD - lU);
+        float edgeStrength = clamp(length(bgGrad) * 6.5, 0.0, 1.0);
+        float2 toBright = length(bgGrad) > 0.004 ? normalize(bgGrad) : normalize(float2(0.35, -0.94));
+
+        float2 shardCell = floor(p / 6.0);
+        float shardNoise = hash1(shardCell);
+        float2 microGrid = p / 4.2;
+        float2 microCell = floor(microGrid);
+        float2 microLocal = fract(microGrid) - 0.5;
+        float microNoise = hash1(microCell + float2(71.3, 19.1));
+
+        // 沿背景明暗交界线优先碎化（edgeStrength 高的区域最早破裂迸出尘埃）
+        float breakOrder = clamp(0.45 * shardNoise + 0.25 * microNoise + 0.35 * (1.0 - edgeStrength), 0.0, 0.96);
+        float shatter = smoothstep(breakOrder - 0.12, breakOrder + 0.08, exitProgress);
+        float dustWindow = smoothstep(breakOrder - 0.10, breakOrder + 0.12, exitProgress)
+            * (1.0 - smoothstep(breakOrder + 0.22, 1.0, exitProgress));
+
+        // 局部反向聚拢结晶尘埃：以菱形/圆晶微粒代替方块噪点，带色散棱边并向背景亮区消融
+        float2 jitDir = normalize(toBright + (hash2(microCell) - 0.5) * 0.95);
+        float gatherDist = clamp(exitProgress * dissolveScatterPx * (0.35 + 0.75 * microNoise), 0.0, 42.0);
+        float2 samplePos = p - jitDir * gatherDist;
+        float2 dustGrid = samplePos / 4.2;
+        float2 dustCell = floor(dustGrid);
+        float2 dustSub = fract(dustGrid) - 0.5;
+        float dustRadius = length(dustSub);
+        float dustDot = 1.0 - smoothstep(0.10, 0.36, dustRadius);
+        float dustPick = step(0.55, hash1(dustCell + float2(13.7, 57.9)));
+        float gatheredCov = clamp(float(glyph.eval(samplePos).a), 0.0, 1.0);
+        float dustSpeck = dustDot * dustPick * gatheredCov * smoothstep(0.02, 0.25, exitProgress);
+
+        float3 dustBgR = straightRgb(bgSharp.eval(p + jitDir * 3.0));
+        float3 dustBgB = straightRgb(bgSharp.eval(p - jitDir * 3.0));
+        float3 dustColor = clamp(float3(dustBgR.r, frostedColor.g, dustBgB.b) * 1.15 + float3(0.28), 0.0, 1.0);
+
+        float localHighlight = smoothstep(0.42, 0.92, bgLuma);
+        float dissolveIntoLight = 1.0 - smoothstep(0.18, 0.96, exitProgress * (0.68 + 0.62 * localHighlight));
+
+        float baseRemain = (1.0 - shatter) * cov;
+        float remainAlpha = clamp(baseRemain * bodyAlpha + (1.0 - shatter) * strokeAlpha, 0.0, 1.0);
+        float3 remainRgb = mix(adaptiveStrokeRgb, interiorRgb, clamp(baseRemain / max(remainAlpha, 0.001), 0.0, 1.0));
+
+        float dustAlpha = clamp(dustSpeck * (0.45 + 0.55 * dustWindow) * dissolveIntoLight, 0.0, 0.82);
+        outAlpha = clamp(max(remainAlpha, dustAlpha) * bgAlpha * enterAlpha, 0.0, 1.0);
+        outRgb = mix(remainRgb, dustColor, clamp(dustAlpha / max(remainAlpha + dustAlpha, 0.001), 0.0, 1.0));
+        outRgb = clamp(outRgb + causticGlow * (1.0 - exitProgress), 0.0, 1.0);
+    } else {
+        float solidCovAlpha = clamp(cov * bodyAlpha, 0.0, 1.0);
+        float combinedCore = clamp(solidCovAlpha + strokeAlpha * (1.0 - solidCovAlpha * 0.65), 0.0, 1.0);
+        float3 coreRgb = mix(adaptiveStrokeRgb, interiorRgb, clamp(solidCovAlpha / max(combinedCore, 0.001), 0.0, 1.0));
+
+        float haloAlpha = clamp(dispEdgeAlpha + causticAlpha, 0.0, 0.85) * (1.0 - cov * 0.7);
+        float3 haloRgb = clamp(edgeRedBlue * 0.72 + causticGlow, 0.0, 1.0);
+
+        outAlpha = clamp((combinedCore + haloAlpha * (1.0 - combinedCore * 0.45)) * bgAlpha * enterAlpha, 0.0, 1.0);
+        outRgb = clamp(coreRgb + haloRgb * (1.0 - combinedCore * 0.5), 0.0, 1.0);
+    }
+
+    float3 premul = clamp(outRgb * outAlpha + float3(origTouch), float3(0.0), float3(outAlpha));
+    half4 res = half4(premul, outAlpha);
+    return half4(min(res.rgb, half3(res.a)), res.a);
+}

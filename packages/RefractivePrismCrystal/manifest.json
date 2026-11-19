@@ -1,0 +1,260 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.refractive-prism-crystal",
+  "name": "拟态折射棱镜",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/RefractivePrismCrystal.cs",
+      "role": "csharp",
+      "sha256": "b3565eca5d35add010fcc12c4001998e65c395d45cd4bfd9e5b040157ab4c95b"
+    },
+    {
+      "path": "graphs/refractive-prism.graph.json",
+      "role": "graph",
+      "sha256": "c113d0fa3989697c23263e4b3b1151dd6495773b1bc7209dbe5ef8c95aedf564"
+    },
+    {
+      "path": "shaders/refractive-prism.program.json",
+      "role": "shaderProgram",
+      "sha256": "c495c9f3609da4d0458900dbf7d519e5957da3b31bc86b29eeaea36ddf1cc743"
+    },
+    {
+      "path": "shaders/refractive-prism.sksl",
+      "role": "shader",
+      "sha256": "b9172e66182dda3be8b39e5e9eab6ad2a73a6411ecbb66901f866289080e734d"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "38c91389788410c8ad441ac6aaf2cdff56f9908ae6b70ea32de220014fb09d1c"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "backdropSource",
+      "type": "enum",
+      "label": "背景采样来源",
+      "default": "media",
+      "values": [
+        {
+          "value": "media",
+          "label": "底层背景媒体"
+        },
+        {
+          "value": "below",
+          "label": "真实下层合成画面"
+        }
+      ]
+    },
+    {
+      "id": "refractionPx",
+      "type": "number",
+      "label": "晶体折射偏移",
+      "default": 7.0,
+      "min": 0,
+      "max": 20,
+      "unit": "px"
+    },
+    {
+      "id": "dispersionPx",
+      "type": "number",
+      "label": "激活红蓝色散偏移",
+      "default": 9.5,
+      "min": 0,
+      "max": 18,
+      "unit": "px"
+    },
+    {
+      "id": "chromaBoost",
+      "type": "number",
+      "label": "背景色彩提纯强度",
+      "default": 1.0,
+      "min": 0,
+      "max": 1.5
+    },
+    {
+      "id": "causticStrength",
+      "type": "number",
+      "label": "焦散亮斑强度",
+      "default": 0.95,
+      "min": 0,
+      "max": 1.5
+    },
+    {
+      "id": "boilingStrength",
+      "type": "number",
+      "label": "长音沸水涟漪强度",
+      "default": 1.15,
+      "min": 0,
+      "max": 2.0
+    },
+    {
+      "id": "longNoteUs",
+      "type": "duration",
+      "label": "长音沸腾门槛",
+      "default": 450000,
+      "min": 100000,
+      "max": 2000000,
+      "unit": "us"
+    },
+    {
+      "id": "strokeWidthPx",
+      "type": "number",
+      "label": "自适应反差描边宽度",
+      "default": 1.8,
+      "min": 0.5,
+      "max": 4.0,
+      "unit": "px"
+    },
+    {
+      "id": "contrastThreshold",
+      "type": "number",
+      "label": "明暗反转亮度阈值",
+      "default": 0.46,
+      "min": 0.1,
+      "max": 0.9
+    },
+    {
+      "id": "frostBlurPx",
+      "type": "number",
+      "label": "凝固毛玻璃模糊半径",
+      "default": 7.5,
+      "min": 0,
+      "max": 16,
+      "unit": "px"
+    },
+    {
+      "id": "frostOpacity",
+      "type": "number",
+      "label": "凝固态毛玻璃浓度",
+      "default": 0.78,
+      "min": 0.15,
+      "max": 1.0
+    },
+    {
+      "id": "solidifyUs",
+      "type": "duration",
+      "label": "唱后凝固过渡时长",
+      "default": 380000,
+      "min": 80000,
+      "max": 1200000,
+      "unit": "us"
+    },
+    {
+      "id": "enterFadeUs",
+      "type": "duration",
+      "label": "入场折射渐显时长",
+      "default": 240000,
+      "min": 0,
+      "max": 1000000,
+      "unit": "us"
+    },
+    {
+      "id": "dissolveScatterPx",
+      "type": "number",
+      "label": "退场折光尘埃离散半径",
+      "default": 22.0,
+      "min": 0,
+      "max": 36,
+      "unit": "px"
+    }
+  ],
+  "exports": [
+    {
+      "id": "refractive-prism-crystal",
+      "kind": "controller",
+      "name": "拟态折射棱镜",
+      "entryType": "RefractivePrismCrystal",
+      "parameters": [
+        "backdropSource",
+        "refractionPx",
+        "dispersionPx",
+        "chromaBoost",
+        "causticStrength",
+        "boilingStrength",
+        "longNoteUs",
+        "strokeWidthPx",
+        "contrastThreshold",
+        "frostBlurPx",
+        "frostOpacity",
+        "solidifyUs",
+        "enterFadeUs",
+        "dissolveScatterPx"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-prism",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": [],
+          "bypass": {
+            "kind": "graphInput",
+            "input": "input:original",
+            "mapping": "identity"
+          }
+        },
+        {
+          "id": "transparent-fallback",
+          "kind": "StyleModulation",
+          "target": "tokenFamily",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "refractive-prism-line",
+      "kind": "graph",
+      "name": "拟态折射棱镜（行图）",
+      "graph": "graphs/refractive-prism.graph.json",
+      "parameters": [
+        "backdropSource",
+        "frostBlurPx"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": [],
+          "bypass": {
+            "kind": "graphInput",
+            "input": "input:original",
+            "mapping": "identity"
+          }
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "token.opacity",
+    "style.fill",
+    "style.stroke",
+    "style.glow",
+    "image.graph",
+    "line.exit"
+  ],
+  "lineExit": {
+    "durationUs": 900000
+  },
+  "emitters": []
+}

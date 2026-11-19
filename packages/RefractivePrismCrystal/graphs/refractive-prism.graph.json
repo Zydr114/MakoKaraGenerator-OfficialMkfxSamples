@@ -1,0 +1,154 @@
+{
+  "graphVersion": 1,
+  "id": "refractive-prism-line",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    },
+    {
+      "id": "glyph",
+      "source": "GlyphCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    },
+    {
+      "id": "background",
+      "source": "parameter:backdropSource",
+      "choices": {
+        "media": "BackgroundMedia",
+        "below": "BackdropBelow"
+      },
+      "type": "color",
+      "availability": "optional",
+      "backgroundRequirement": "media",
+      "space": "canvas"
+    }
+  ],
+  "parameters": [
+    "backdropSource",
+    "frostBlurPx"
+  ],
+  "nodes": [
+    {
+      "id": "bgSmooth",
+      "op": "Blur",
+      "input": "input:background",
+      "sigmaPx": 4.5,
+      "bounds": {
+        "expandPx": 20,
+        "maxExpandPx": 20,
+        "maxSampleOffsetPx": 20
+      },
+      "edge": "clamp"
+    },
+    {
+      "id": "bgFrosted",
+      "op": "Blur",
+      "input": "input:background",
+      "sigmaPx": "parameter:frostBlurPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:frostBlurPx)",
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "clamp"
+    },
+    {
+      "id": "prism",
+      "op": "RuntimeShader",
+      "program": "shaders/refractive-prism.program.json",
+      "children": {
+        "original": "input:original",
+        "glyph": "input:glyph",
+        "bgSharp": "input:background",
+        "bgSmooth": "node:bgSmooth",
+        "bgFrosted": "node:bgFrosted"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "canvasSize": "host:canvasSize",
+        "enterAlpha": 1.0,
+        "exitProgress": 0.0,
+        "allSung": 0.0,
+        "refractionPx": 7.0,
+        "dispersionPx": 9.5,
+        "chromaBoost": 1.0,
+        "causticStrength": 0.95,
+        "boilingStrength": 1.15,
+        "strokeWidthPx": 1.8,
+        "contrastThreshold": 0.46,
+        "frostOpacity": 0.78,
+        "dissolveScatterPx": 22.0,
+        "audioEnergy": 0.0,
+        "sungCutoffX": -10000.0,
+        "lineBounds": [0, 0, 1280, 720],
+        "slotCount": 0,
+        "slotRects": [
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
+        ],
+        "slotStates": [
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
+        ]
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 40,
+        "maxExpandPx": 40,
+        "maxSampleOffsetPx": 56
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:prism",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 96
+  },
+  "composite": {
+    "mode": "sourceOver"
+  },
+  "bypassInput": "input:original"
+}
