@@ -8,14 +8,14 @@
 
 | 目录 | `packageId` | 导出种类与目标 | 声明能力（`requires`） | 核心示范点 |
 | --- | --- | --- | --- | --- |
-| [`01-UtopiaEmphasis`](../packages/01-UtopiaEmphasis) | `makokara.sample.utopia-emphasis` | `controller` → `tokenFamily` | `token.affine`、`style.glow` | `number` / `duration` / `enum` / `curve` / `boolean` / `color` 参数、瞬间突放回落、`SetGlow` |
-| [`02-WordSwellEmphasis`](../packages/02-WordSwellEmphasis) | `makokara.sample.word-swell-emphasis` | `controller` → `tokenFamily` | `token.affine` | 演唱进度渐变膨胀、`IsSung` 唱完后平滑回落、组合平移与缩放矩阵、`CanTransformIndependently` |
-| [`03-StarTrail`](../packages/03-StarTrail) | `makokara.sample.star-trail` | `controller` → `canvas` (`Overlay`) | `particles.continuous`、`visuals.trails`、`visuals.paths`、`resources.svg.vector` | 双连续发射器（`cursor`）、`BridgePolicy`、粒子 `GetTrail`、SVG 矢量、`DrawTrails` + `DrawPaths` |
-| [`04-PetalFall`](../packages/04-PetalFall) | `makokara.sample.petal-fall` | `controller` → `canvas` (`Overlay`) | `particles.burst`、`visuals.paths`、`resources.svg.vector` | `TimelineSelector` + `EventBurstPlan`、`FinalGeometry.Lines` 行包围框映射、SVG 3D 翻转仿射、图层切换 |
-| [`05-LiquidGlassMaterial`](../packages/05-LiquidGlassMaterial) | `makokara.sample.liquid-glass` | `material` → `region` (`fill`, `stroke`) | `[]` | `masked` 区域覆盖材质、`parameter:backdropSource` 条件输入（`BackgroundMedia` / `BackdropBelow`）、Blur + SkSL 折射、渐变 `fallback` |
-| [`06-FrostedGlassMaterial`](../packages/06-FrostedGlassMaterial) | `makokara.sample.frosted-glass` | `material` → `region` (`fill`, `stroke`) | `[]` | 大半径 Blur（`ceil(3 * parameter:blurPx)`）+ 晶粒散射 SkSL、缎面高光、渐变 `fallback` |
-| [`07-BeatPulseNeon`](../packages/07-BeatPulseNeon) | `makokara.sample.beat-pulse-neon` | `controller` → `tokenFamily` + `canvas` | `token.affine`、`style.glow`、`visuals.segments` | `AudioFeatures`（含备用 BPM 退化）、`OverlayLayer.BehindText` 线段频谱条、`integer` 参数 |
-| [`08-HoloPrismGlow`](../packages/08-HoloPrismGlow) | `makokara.sample.holo-prism-glow` | `graph` → `line` | `image.graph` | 整行 `TargetColor` + `SungCoverage` 遮罩、`Mask` → `Blur` → `RuntimeShader` 三节点 DAG、RGB 色散与虹彩 SkSL |
+| [`BeatPulseNeon`](../packages/BeatPulseNeon) | `makokara.sample.beat-pulse-neon` | `controller` → `tokenFamily` + `canvas` | `token.affine`、`style.glow`、`visuals.segments` | `AudioFeatures`（含备用 BPM 退化）、`OverlayLayer.BehindText` 线段频谱条、`integer` 参数 |
+| [`FrostedGlassMaterial`](../packages/FrostedGlassMaterial) | `makokara.sample.frosted-glass` | `material` → `region` (`fill`, `stroke`) | `[]` | 大半径 Blur（`ceil(3 * parameter:blurPx)`）+ 晶粒散射 SkSL、缎面高光、渐变 `fallback` |
+| [`HoloPrismGlow`](../packages/HoloPrismGlow) | `makokara.sample.holo-prism-glow` | `graph` → `line` | `image.graph` | 整行 `TargetColor` + `SungCoverage` 遮罩、`Mask` → `Blur` → `RuntimeShader` 三节点 DAG、RGB 色散与虹彩 SkSL |
+| [`LiquidGlassMaterial`](../packages/LiquidGlassMaterial) | `makokara.sample.liquid-glass` | `material` → `region` (`fill`, `stroke`) | `[]` | `masked` 区域覆盖材质、`parameter:backdropSource` 条件输入（`BackgroundMedia` / `BackdropBelow`）、Blur + SkSL 折射、渐变 `fallback` |
+| [`PetalFall`](../packages/PetalFall) | `makokara.sample.petal-fall` | `controller` → `canvas` (`Overlay`) | `particles.burst`、`visuals.paths`、`resources.svg.vector` | `TimelineSelector` + `EventBurstPlan`、`FinalGeometry.Lines` 行包围框映射、SVG 3D 翻转仿射、图层切换 |
+| [`StarTrail`](../packages/StarTrail) | `makokara.sample.star-trail` | `controller` → `canvas` (`Overlay`) | `particles.continuous`、`visuals.trails`、`visuals.paths`、`resources.svg.vector` | 双连续发射器（`cursor`）、`BridgePolicy`、粒子 `GetTrail`、SVG 矢量、`DrawTrails` + `DrawPaths` |
+| [`UtopiaEmphasis`](../packages/UtopiaEmphasis) | `makokara.sample.utopia-emphasis` | `controller` → `tokenFamily` | `token.affine`、`style.glow` | `number` / `duration` / `enum` / `curve` / `boolean` / `color` 参数、瞬间突放回落、`SetGlow` |
+| [`WordSwellEmphasis`](../packages/WordSwellEmphasis) | `makokara.sample.word-swell-emphasis` | `controller` → `tokenFamily` | `token.affine` | 演唱进度渐变膨胀、`IsSung` 唱完后平滑回落、组合平移与缩放矩阵、`CanTransformIndependently` |
 
 ---
 
@@ -37,13 +37,13 @@
 
 | `role` | 含义 | 本仓库实际示例 |
 | --- | --- | --- |
-| `csharp` | C# 14 控制器源码 | `01`、`02`、`03`、`04`、`07` 各自的 `src/*.cs` |
+| `csharp` | C# 14 控制器源码 | `BeatPulseNeon`、`PetalFall`、`StarTrail`、`UtopiaEmphasis`、`WordSwellEmphasis` 各自的 `src/*.cs` |
 | `asset` | 随包分发的 `README.md` 等一般文件 | 全部 8 个包的 `README.md` |
-| `svg` | 静态 SVG 源文件 | `03-StarTrail/assets/*.svg`、`04-PetalFall/assets/*.svg` |
-| `svgResource` | SVG 使用描述 JSON（`mako-svg-static-1`） | `03-StarTrail/resources/*.json`、`04-PetalFall/resources/*.json` |
-| `graph` | 图像图定义 JSON（`graphVersion: 1`） | `05`、`06`、`08` 各自的 `graphs/*.graph.json` |
-| `shaderProgram` | SkSL 程序描述 JSON（`programVersion: 1`、`profile: "skia-raster-3.119.4-v1"`） | `05`、`06`、`08` 各自的 `shaders/*.program.json` |
-| `shader` | SkSL 着色器源码 | `05`、`06`、`08` 各自的 `shaders/*.sksl` |
+| `svg` | 静态 SVG 源文件 | `StarTrail/assets/*.svg`、`PetalFall/assets/*.svg` |
+| `svgResource` | SVG 使用描述 JSON（`mako-svg-static-1`） | `StarTrail/resources/*.json`、`PetalFall/resources/*.json` |
+| `graph` | 图像图定义 JSON（`graphVersion: 1`） | `FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial` 各自的 `graphs/*.graph.json` |
+| `shaderProgram` | SkSL 程序描述 JSON（`programVersion: 1`、`profile: "skia-raster-3.119.4-v1"`） | `FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial` 各自的 `shaders/*.program.json` |
+| `shader` | SkSL 着色器源码 | `FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial` 各自的 `shaders/*.sksl` |
 
 ### 2.3 参数类型（`parameters[].type`）对照
 
@@ -51,13 +51,13 @@
 
 | 清单 `type` | C# 读取方法 | 示例包位置 |
 | --- | --- | --- |
-| `number` | `GetNumber(id)` → `double` | `01`（`peakScale` 等）、`02`、`03`、`04`、`07`；以及 `05`、`06`、`08` 图/着色器参数 |
-| `integer` | `GetInteger(id)` → `long` | `04`（`lineDensity`、`burstCount`）、`07`（`barCount`） |
-| `duration` | `GetDuration(id)` → `long`（微秒） | `01`（`attackUs`、`decayUs`）、`02`（`returnUs`）、`03`（`lifeUs`、`trailUs`、`bridgeUs`、`bridgeGapLimitUs`）、`04`（`lifeUs`） |
-| `boolean` | `GetBoolean(id)` → `bool` | `01`（`flashGlow`）、`03`（`bridgeLines`）、`07`（`showEqualizer`） |
-| `enum` | `GetEnum(id)` → `string` | `01`（`decayMode`、`anchor`）、`02`（`anchor`）、`04`（`layer`）、`05` & `06`（`backdropSource`，图输入直接绑定） |
-| `color` | `GetColor(id)` → `ColorRgba` | `01`、`03`、`04`、`07`；以及 `05` & `06`（`tintColor`） |
-| `curve` | `GetCurve(id)` → `CurveValue` | `01`（`decayCurve`）、`02`（`growCurve`、`returnCurve`） |
+| `number` | `GetNumber(id)` → `double` | `BeatPulseNeon`、`PetalFall`、`StarTrail`、`UtopiaEmphasis`、`WordSwellEmphasis`；以及 `FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial` 图/着色器参数 |
+| `integer` | `GetInteger(id)` → `long` | `PetalFall`（`lineDensity`、`burstCount`）、`BeatPulseNeon`（`barCount`） |
+| `duration` | `GetDuration(id)` → `long`（微秒） | `UtopiaEmphasis`（`attackUs`、`decayUs`）、`WordSwellEmphasis`（`returnUs`）、`StarTrail`（`lifeUs`、`trailUs`、`bridgeUs`、`bridgeGapLimitUs`）、`PetalFall`（`lifeUs`） |
+| `boolean` | `GetBoolean(id)` → `bool` | `UtopiaEmphasis`（`flashGlow`）、`StarTrail`（`bridgeLines`）、`BeatPulseNeon`（`showEqualizer`） |
+| `enum` | `GetEnum(id)` → `string` | `UtopiaEmphasis`（`decayMode`、`anchor`）、`WordSwellEmphasis`（`anchor`）、`PetalFall`（`layer`）、`LiquidGlassMaterial` & `FrostedGlassMaterial`（`backdropSource`，图输入直接绑定） |
+| `color` | `GetColor(id)` → `ColorRgba` | `UtopiaEmphasis`、`StarTrail`、`PetalFall`、`BeatPulseNeon`；以及 `LiquidGlassMaterial` & `FrostedGlassMaterial`（`tintColor`） |
+| `curve` | `GetCurve(id)` → `CurveValue` | `UtopiaEmphasis`（`decayCurve`）、`WordSwellEmphasis`（`growCurve`、`returnCurve`） |
 
 ---
 
@@ -67,21 +67,21 @@
 
 | API / 类型 | 用途说明 | 示例源码 |
 | --- | --- | --- |
-| `IPureKaraokeEffect<TPrepared>` + `PreparedEffect` | 纯文字阶段入口（`Declare` + `Evaluate`） | [`UtopiaEmphasis.cs`](../packages/01-UtopiaEmphasis/src/UtopiaEmphasis.cs)、[`WordSwellEmphasis.cs`](../packages/02-WordSwellEmphasis/src/WordSwellEmphasis.cs) |
-| `IPureVisualEffect<TPrepared>` | 增加粒子计划/晚期绘制入口 `EvaluateVisuals` | [`StarTrail.cs`](../packages/03-StarTrail/src/StarTrail.cs)、[`PetalFall.cs`](../packages/04-PetalFall/src/PetalFall.cs)、[`BeatPulseNeon.cs`](../packages/07-BeatPulseNeon/src/BeatPulseNeon.cs) |
-| `frame.Presentations.TokensInBinding` & `PerformanceSample` | 读取绑定内当前元素及 `ProgressSource`、`TimeRange`、`Progress`、`IsCurrent`、`IsSung` | `01-UtopiaEmphasis`、`02-WordSwellEmphasis`、`07-BeatPulseNeon` |
-| `frame.Geometry` & `BaseGeometry.CanTransformIndependently` | 连字安全检查与支点计算（字框中心 / 基线 / 底部） | `01-UtopiaEmphasis`、`02-WordSwellEmphasis`、`07-BeatPulseNeon` |
-| `output.AppendTransform(token.WithRuby, matrix)` | 围绕支点等比缩放、与平移矩阵组合（`Translation.Compose(ScaleAt)`） | `01-UtopiaEmphasis`、`02-WordSwellEmphasis`、`07-BeatPulseNeon` |
-| `output.SetGlow(token.WithRuby, TextState.Sung, GlowValue)` | 脉冲闪耀辉光与双色霓虹辉光 | `01-UtopiaEmphasis`、`07-BeatPulseNeon` |
-| `source.Timeline` & `TimelineSelector` | 在 `Declare` 阶段查询 `TokenStarted` 源事件构建 `EventBurstPlan` | `04-PetalFall`（`TimelineEventKind.TokenStarted`） |
-| `CursorEmissionPlan` / `EventBurstPlan` / `ParticleSpec` | 声明连续播放头发射（含 `BridgePolicy`）与事件爆发粒子 | `03-StarTrail`（连续 `spine` / `dust`）、`04-PetalFall`（爆发 `petal-burst`） |
-| `frame.Particles.Alive` / `Births` / `GetTrail(id)` | 晚期绘制读取存活粒子、出生窗历史与宿主解析拖尾 | `03-StarTrail`（`Births` 串联主光带 + `GetTrail`）、`04-PetalFall` |
-| `frame.FinalGeometry.Playback.Cursors` | 读取最终变换/变形后的实时播放头坐标 | `03-StarTrail`（双层反旋星芒主星） |
-| `frame.FinalGeometry.Lines` & `GeometrySample.MapPoint` | 从局部行框映射到最终画布坐标（跟随入场/变换） | `04-PetalFall`（行周花瓣）、`07-BeatPulseNeon`（行底频谱条） |
-| `source.Resources.GetVector(id)` & `output.DrawPaths` | 加载静态 SVG 矢量资源并按 `Affine2` 绘制（含旋转与模拟 3D 缩放翻转） | `03-StarTrail`、`04-PetalFall` |
-| `output.DrawTrails` / `output.DrawSegments` | 绘制可变宽渐隐拖尾与 `BehindText` 线段频谱条 | `03-StarTrail`（`Trails`）、`07-BeatPulseNeon`（`Segments`） |
-| `frame.Audio.GetAt(timeUs)` & `AudioAvailability` | 读取 `BassLevel` / `Pulse` / `BeatPhase`，并在无分析时按 `fallbackBpm` 降级 | `07-BeatPulseNeon` |
-| `frame.Random.GetUnitDouble(streamKey, index)` | 确定性伪随机抖动（星尘/花瓣相角、大小、速度与配色插值） | `03-StarTrail`、`04-PetalFall` |
+| `IPureKaraokeEffect<TPrepared>` + `PreparedEffect` | 纯文字阶段入口（`Declare` + `Evaluate`） | [`UtopiaEmphasis.cs`](../packages/UtopiaEmphasis/src/UtopiaEmphasis.cs)、[`WordSwellEmphasis.cs`](../packages/WordSwellEmphasis/src/WordSwellEmphasis.cs) |
+| `IPureVisualEffect<TPrepared>` | 增加粒子计划/晚期绘制入口 `EvaluateVisuals` | [`StarTrail.cs`](../packages/StarTrail/src/StarTrail.cs)、[`PetalFall.cs`](../packages/PetalFall/src/PetalFall.cs)、[`BeatPulseNeon.cs`](../packages/BeatPulseNeon/src/BeatPulseNeon.cs) |
+| `frame.Presentations.TokensInBinding` & `PerformanceSample` | 读取绑定内当前元素及 `ProgressSource`、`TimeRange`、`Progress`、`IsCurrent`、`IsSung` | `UtopiaEmphasis`、`WordSwellEmphasis`、`BeatPulseNeon` |
+| `frame.Geometry` & `BaseGeometry.CanTransformIndependently` | 连字安全检查与支点计算（字框中心 / 基线 / 底部） | `UtopiaEmphasis`、`WordSwellEmphasis`、`BeatPulseNeon` |
+| `output.AppendTransform(token.WithRuby, matrix)` | 围绕支点等比缩放、与平移矩阵组合（`Translation.Compose(ScaleAt)`） | `UtopiaEmphasis`、`WordSwellEmphasis`、`BeatPulseNeon` |
+| `output.SetGlow(token.WithRuby, TextState.Sung, GlowValue)` | 脉冲闪耀辉光与双色霓虹辉光 | `UtopiaEmphasis`、`BeatPulseNeon` |
+| `source.Timeline` & `TimelineSelector` | 在 `Declare` 阶段查询 `TokenStarted` 源事件构建 `EventBurstPlan` | `PetalFall`（`TimelineEventKind.TokenStarted`） |
+| `CursorEmissionPlan` / `EventBurstPlan` / `ParticleSpec` | 声明连续播放头发射（含 `BridgePolicy`）与事件爆发粒子 | `StarTrail`（连续 `spine` / `dust`）、`PetalFall`（爆发 `petal-burst`） |
+| `frame.Particles.Alive` / `Births` / `GetTrail(id)` | 晚期绘制读取存活粒子、出生窗历史与宿主解析拖尾 | `StarTrail`（`Births` 串联主光带 + `GetTrail`）、`PetalFall` |
+| `frame.FinalGeometry.Playback.Cursors` | 读取最终变换/变形后的实时播放头坐标 | `StarTrail`（双层反旋星芒主星） |
+| `frame.FinalGeometry.Lines` & `GeometrySample.MapPoint` | 从局部行框映射到最终画布坐标（跟随入场/变换） | `PetalFall`（行周花瓣）、`BeatPulseNeon`（行底频谱条） |
+| `source.Resources.GetVector(id)` & `output.DrawPaths` | 加载静态 SVG 矢量资源并按 `Affine2` 绘制（含旋转与模拟 3D 缩放翻转） | `StarTrail`、`PetalFall` |
+| `output.DrawTrails` / `output.DrawSegments` | 绘制可变宽渐隐拖尾与 `BehindText` 线段频谱条 | `StarTrail`（`Trails`）、`BeatPulseNeon`（`Segments`） |
+| `frame.Audio.GetAt(timeUs)` & `AudioAvailability` | 读取 `BassLevel` / `Pulse` / `BeatPhase`，并在无分析时按 `fallbackBpm` 降级 | `BeatPulseNeon` |
+| `frame.Random.GetUnitDouble(streamKey, index)` | 确定性伪随机抖动（星尘/花瓣相角、大小、速度与配色插值） | `StarTrail`、`PetalFall` |
 
 ---
 
@@ -89,14 +89,14 @@
 
 参考：[script-sdk-v2.md §16 图、shader 与材质包格式](script-sdk-v2.md#16-图shader-与材质包格式)
 
-### 4.1 `material` 导出（`05-LiquidGlassMaterial`、`06-FrostedGlassMaterial`）
+### 4.1 `material` 导出（`LiquidGlassMaterial`、`FrostedGlassMaterial`）
 
 - **声明方式**：`exports[].kind = "material"`，`regions = ["fill", "stroke"]`，`coverageMode = "masked"`，`outputs[].bypass = {"kind": "materialFallback", "mapping": "identity"}`。
 - **透明兜底**：配置了 `Linear` 线性渐变 `fallback`（`colorSpace: "LinearRgb"`，8 位十六进制 `#RRGGBBAA`）；在透明输出渲染时，宿主自动触发 `TransparentBackgroundDependency` 诊断并回退到该渐变。
 - **动态背景来源选择**：两份图均使用 `"source": "parameter:backdropSource"` 与 `"choices": {"media": "BackgroundMedia", "below": "BackdropBelow"}`，将 `availability` 设为 `"optional"`、`backgroundRequirement` 设为 `"media"`，使同一套材质包可在“底层背景媒体”与“真实下层合成画面”间切换。
 - **节点链路与外扩边界**：`Blur` 节点使用 `"expandPx": "ceil(3 * parameter:blurPx)"`（遵守 `maxExpandPx` 与 `maxSampleOffsetPx` 预算），下游 `RuntimeShader` 结合 `TargetRegionCoverage` 梯度计算边缘法线，输出**已乘 alpha 的 RGBA**（`half4(lit * alpha, alpha)`）。
 
-### 4.2 `graph` 导出（`08-HoloPrismGlow`）
+### 4.2 `graph` 导出（`HoloPrismGlow`）
 
 - **声明方式**：`exports[].kind = "graph"`，包级 `requires` 声明 `["image.graph"]`，`bindingKinds` 为 `["project", "branch", "lines", "clips", "node"]`（输出 `target: "line"`）。
 - **节点链路**：

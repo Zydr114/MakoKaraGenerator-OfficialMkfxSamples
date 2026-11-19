@@ -27,14 +27,14 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 
 | 目录 | `packageId` | 类型 | 核心特性 |
 | --- | --- | --- | --- |
-| [`packages/01-UtopiaEmphasis`](packages/01-UtopiaEmphasis) | `makokara.sample.utopia-emphasis` | 控制器 (`controller`) | 仿 Utopia 逐字爆发缩放、可配置衰减曲线与闪耀辉光 |
-| [`packages/02-WordSwellEmphasis`](packages/02-WordSwellEmphasis) | `makokara.sample.word-swell-emphasis` | 控制器 (`controller`) | 逐字平滑膨胀、上浮与唱完回落，支持连字安全判断 |
-| [`packages/03-StarTrail`](packages/03-StarTrail) | `makokara.sample.star-trail` | 控制器 (`controller`) | 播放头双层旋转 SVG 主星、连续粒子、彗星拖尾与跨行飞行衔接 |
-| [`packages/04-PetalFall`](packages/04-PetalFall) | `makokara.sample.petal-fall` | 控制器 (`controller`) | 行周 3D 翻转樱花雨 + `TokenStarted` 逐字惊落爆发粒子 |
-| [`packages/05-LiquidGlassMaterial`](packages/05-LiquidGlassMaterial) | `makokara.sample.liquid-glass` | 材质 (`material`) | 折射模糊、轮廓梯度 Fresnel 边缘、色散、流光与透明渐变兜底 |
-| [`packages/06-FrostedGlassMaterial`](packages/06-FrostedGlassMaterial) | `makokara.sample.frosted-glass` | 材质 (`material`) | 大半径高斯模糊、微米晶粒散射、缎面高光与透明渐变兜底 |
-| [`packages/07-BeatPulseNeon`](packages/07-BeatPulseNeon) | `makokara.sample.beat-pulse-neon` | 控制器 (`controller`) | 音频特征（含备用 BPM）驱动脉冲缩放、霓虹辉光与字后频谱条 |
-| [`packages/08-HoloPrismGlow`](packages/08-HoloPrismGlow) | `makokara.sample.holo-prism-glow` | 图效果 (`graph`) | 整行 `SungCoverage` 遮罩提取、Bloom、RGB 棱镜色散与全息流光 |
+| [`packages/BeatPulseNeon`](packages/BeatPulseNeon) | `makokara.sample.beat-pulse-neon` | 控制器 (`controller`) | 音频特征（含备用 BPM）驱动脉冲缩放、霓虹辉光与字后频谱条 |
+| [`packages/FrostedGlassMaterial`](packages/FrostedGlassMaterial) | `makokara.sample.frosted-glass` | 材质 (`material`) | 大半径高斯模糊、微米晶粒散射、缎面高光与透明渐变兜底 |
+| [`packages/HoloPrismGlow`](packages/HoloPrismGlow) | `makokara.sample.holo-prism-glow` | 图效果 (`graph`) | 整行 `SungCoverage` 遮罩提取、Bloom、RGB 棱镜色散与全息流光 |
+| [`packages/LiquidGlassMaterial`](packages/LiquidGlassMaterial) | `makokara.sample.liquid-glass` | 材质 (`material`) | 折射模糊、轮廓梯度 Fresnel 边缘、色散、流光与透明渐变兜底 |
+| [`packages/PetalFall`](packages/PetalFall) | `makokara.sample.petal-fall` | 控制器 (`controller`) | 行周 3D 翻转樱花雨 + `TokenStarted` 逐字惊落爆发粒子 |
+| [`packages/StarTrail`](packages/StarTrail) | `makokara.sample.star-trail` | 控制器 (`controller`) | 播放头双层旋转 SVG 主星、连续粒子、彗星拖尾与跨行飞行衔接 |
+| [`packages/UtopiaEmphasis`](packages/UtopiaEmphasis) | `makokara.sample.utopia-emphasis` | 控制器 (`controller`) | 仿 Utopia 逐字爆发缩放、可配置衰减曲线与闪耀辉光 |
+| [`packages/WordSwellEmphasis`](packages/WordSwellEmphasis) | `makokara.sample.word-swell-emphasis` | 控制器 (`controller`) | 逐字平滑膨胀、上浮与唱完回落，支持连字安全判断 |
 
 ---
 
@@ -55,7 +55,7 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 python3 tools/pack.py --check                   # 仅校验全部包的合同字段、文件闭包与 SHA-256 摘要
 python3 tools/pack.py --refresh                 # 修改源码或资源后，仅更新 manifest.json 的 SHA-256
 python3 tools/pack.py                           # 更新摘要并导出全部 .mkfx 到本地 dist/（已 gitignore）
-python3 tools/pack.py 01-UtopiaEmphasis         # 仅打包指定效果包
+python3 tools/pack.py UtopiaEmphasis            # 仅打包指定效果包
 ```
 
 ### 2. 后端编译准入与 Vulkan 真实渲染验证（`tools/Verify/`）
@@ -72,5 +72,5 @@ python3 tools/pack.py 01-UtopiaEmphasis         # 仅打包指定效果包
 ```bash
 dotnet build -c Release --artifacts-path .artifacts tools/Verify/Verify.csproj
 dotnet .artifacts/bin/Verify/release/Verify.dll --root .
-dotnet .artifacts/bin/Verify/release/Verify.dll --root . --only 05-LiquidGlassMaterial,08-HoloPrismGlow
+dotnet .artifacts/bin/Verify/release/Verify.dll --root . --only LiquidGlassMaterial,HoloPrismGlow
 ```
