@@ -10,6 +10,7 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 
 ```text
 .
+├── .agents/skills/        # Agent 工作区 Skill（mkfx-v2-authoring）
 ├── dist/                  # 10 个已打包的 .mkfx 效果包归档（可直接导入应用）
 ├── packages/              # 10 个展开后的 SDK v2 示例效果包目录
 ├── docs/                  # SDK v2 API 完整参考与示例对照文档
@@ -45,6 +46,7 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 
 - [SDK v2 完整 API 参考](docs/script-sdk-v2.md)：包格式 3 清单、C# 纯求值入口、几何映射、样式、粒子、SVG、ImageGraph/SkSL 与音频/媒体特征完整规范。
 - [SDK v2 API 与示例包对照索引](docs/api-sample-mapping.md)：按清单字段、参数类型、C# API 与图/着色器机制快速定位到本仓库具体示例。
+- [SDK v2 进阶脚本编写经验与避坑指南](docs/mkfx-v2-authoring.md)：沉淀纯度零分配写法、目标粒度选择、逐字退场、Ruby 分段/兜底切片与局部 `BindGraph` 防裁切等实战经验（对应工作区 Skill：[`.agents/skills/mkfx-v2-authoring/SKILL.md`](.agents/skills/mkfx-v2-authoring/SKILL.md)）。
 
 ---
 
