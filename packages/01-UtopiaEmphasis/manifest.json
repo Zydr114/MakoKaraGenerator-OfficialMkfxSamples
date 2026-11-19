@@ -1,0 +1,180 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.utopia-emphasis",
+  "name": "仿Utopia逐字强调",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/UtopiaEmphasis.cs",
+      "role": "csharp",
+      "sha256": "0faf92c796f2627dcea137dc03d081086ebb336b75c4a897fbab5032a37858e2"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "c0b4e102e8c5e30ece30a3f3b4cb577dabf7a9ff95aff1fc24792b961430d148"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 1.6,
+      "id": "peakScale",
+      "label": "瞬间爆发倍率",
+      "max": 4,
+      "min": 1,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": 0,
+      "id": "attackUs",
+      "label": "突放缓冲时长",
+      "max": 150000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": "fixed",
+      "id": "decayMode",
+      "label": "缩回计时模式",
+      "type": "enum",
+      "values": [
+        {
+          "label": "固定衰减时长",
+          "value": "fixed"
+        },
+        {
+          "label": "按单字演唱时长",
+          "value": "token"
+        }
+      ]
+    },
+    {
+      "default": 480000,
+      "id": "decayUs",
+      "label": "衰减回落时长",
+      "max": 2000000,
+      "min": 30000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": {
+        "easing": "easeOut",
+        "kind": "easing"
+      },
+      "id": "decayCurve",
+      "label": "缩小衰减曲线",
+      "type": "curve"
+    },
+    {
+      "default": "center",
+      "id": "anchor",
+      "label": "缩放支点",
+      "type": "enum",
+      "values": [
+        {
+          "label": "字框中心",
+          "value": "center"
+        },
+        {
+          "label": "基线中心",
+          "value": "baseline"
+        },
+        {
+          "label": "字框底部",
+          "value": "bottom"
+        }
+      ]
+    },
+    {
+      "default": true,
+      "id": "flashGlow",
+      "label": "瞬时闪耀辉光",
+      "type": "boolean"
+    },
+    {
+      "default": {
+        "a": 1,
+        "b": 0.78,
+        "g": 0.95,
+        "r": 1
+      },
+      "id": "glowColor",
+      "label": "闪耀辉光颜色",
+      "type": "color"
+    },
+    {
+      "default": 12,
+      "id": "glowBlurPx",
+      "label": "辉光模糊半径",
+      "max": 48,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.75,
+      "id": "glowOpacity",
+      "label": "辉光峰值不透明度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "UtopiaEmphasis",
+      "id": "utopia-emphasis",
+      "kind": "controller",
+      "name": "仿Utopia逐字强调",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "scale",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "flash",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "tokenFamily"
+        }
+      ],
+      "parameters": [
+        "peakScale",
+        "attackUs",
+        "decayMode",
+        "decayUs",
+        "decayCurve",
+        "anchor",
+        "flashGlow",
+        "glowColor",
+        "glowBlurPx",
+        "glowOpacity"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "style.glow"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

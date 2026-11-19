@@ -1,0 +1,46 @@
+uniform float grainScatterPx;
+uniform float grainAmount;
+uniform float highlight;
+layout(color) uniform float4 tintColor;
+uniform float tintStrength;
+uniform float opacity;
+uniform shader background;
+uniform shader coverage;
+
+half4 main(float2 p) {
+    float cov = clamp(float(coverage.eval(p).a), 0.0, 1.0);
+    float covL = float(coverage.eval(p - float2(1.5, 0.0)).a);
+    float covR = float(coverage.eval(p + float2(1.5, 0.0)).a);
+    float covU = float(coverage.eval(p - float2(0.0, 1.5)).a);
+    float covD = float(coverage.eval(p + float2(0.0, 1.5)).a);
+
+    float2 grad = float2(covL - covR, covU - covD);
+    float gradLen = length(grad);
+    float2 normal = gradLen > 0.001 ? grad / gradLen : float2(0.0, 0.0);
+    float edgeMask = clamp(gradLen * 1.25, 0.0, 1.0);
+
+    // 亚克力细磨砂颗粒散射采样，打造细腻柔和的毛玻璃质感
+    float2 cell = floor(p);
+    float n1 = fract(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
+    float n2 = fract(sin(dot(cell, float2(269.5, 183.3))) * 43758.5453);
+    float2 jitter = (float2(n1, n2) - 0.5) * (1.4142 * grainScatterPx);
+
+    half4 sampled = background.eval(p + jitter);
+    float3 straight = sampled.a > 0.0001 ? float3(sampled.rgb) / float(sampled.a) : float3(0.0);
+
+    // 混入乳白磨砂玻璃底色，并叠加微米晶粒噪点
+    float3 frosted = mix(straight, tintColor.rgb, clamp(tintStrength, 0.0, 1.0));
+    float grainNoise = (fract(sin(dot(cell + float2(19.3, 47.7), float2(41.1, 289.7))) * 29432.17) - 0.5) * grainAmount;
+    frosted = clamp(frosted + float3(grainNoise), 0.0, 1.0);
+
+    // 柔润缎面高光 + 磨砂内倒角微亮边
+    float2 lightDir = normalize(float2(-0.6, -0.8));
+    float edgeRim = (0.35 + 0.65 * clamp(dot(normal, lightDir), 0.0, 1.0)) * edgeMask;
+    float satinSlope = 0.5 + 0.5 * sin(0.012 * p.x + 0.016 * p.y);
+    float satin = pow(satinSlope, 2.2) * 0.45;
+    float spec = clamp(highlight, 0.0, 1.0) * (satin + edgeRim * 0.75);
+
+    float3 lit = clamp(frosted + float3(spec), 0.0, 1.0);
+    float alpha = clamp(cov * clamp(opacity, 0.0, 1.0) * float(sampled.a), 0.0, 1.0);
+    return half4(lit * alpha, alpha);
+}

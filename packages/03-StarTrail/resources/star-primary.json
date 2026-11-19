@@ -1,0 +1,13 @@
+{
+  "svgResourceVersion": 1,
+  "id": "star-primary",
+  "source": "assets/star-primary.svg",
+  "profile": "mako-svg-static-1",
+  "mode": "vector",
+  "viewport": {
+    "width": 100,
+    "height": 100
+  },
+  "fonts": [],
+  "images": []
+}

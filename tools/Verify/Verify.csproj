@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    独立验证器：直接引用 MakoKaraGenerator-App 后端的生产组合根（Runtime.Hosting），
+    直接读取 packages/<包名>/ 展开目录，执行闭包校验、.mkfx 往返打包校验、全量准入编译，
+    并在 Vulkan GPU 后端上渲染普通与透明背景帧以核验像素变化与零 Error 诊断。
+    后端路径可通过 MSBuild 属性 MakoBackendRoot 覆盖。
+    构建时请指定 artifacts 路径（.artifacts），使中间产物落在本仓库而不污染主仓库。
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <TieredPGO>false</TieredPGO>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <MakoBackendRoot Condition="'$(MakoBackendRoot)' == ''">$(MSBuildThisFileDirectory)../../../MakoKaraGenerator-App/backend</MakoBackendRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(MakoBackendRoot)/src/MakoKaraGenerator.Application/MakoKaraGenerator.Application.csproj" />
+    <ProjectReference Include="$(MakoBackendRoot)/src/MakoKaraGenerator.Runtime.Hosting/MakoKaraGenerator.Runtime.Hosting.csproj" />
+    <ProjectReference Include="$(MakoBackendRoot)/src/MakoKaraGenerator.Scripting.Compiler/MakoKaraGenerator.Scripting.Compiler.csproj" />
+    <None Include="assets/**/*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

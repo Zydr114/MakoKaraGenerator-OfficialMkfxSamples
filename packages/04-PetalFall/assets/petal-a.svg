@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="sakuraA" gradientUnits="objectBoundingBox" cx="0.5" cy="0.65" r="0.6">
+      <stop offset="0" stop-color="#fff8fb"/>
+      <stop offset="0.55" stop-color="#ffc9df"/>
+      <stop offset="1" stop-color="#ff8fbe"/>
+    </radialGradient>
+  </defs>
+  <path d="M50.00 94.00 C30.00 84.00 18.00 62.00 24.00 36.00 C28.00 18.00 40.00 10.00 46.50 18.00 L50.00 25.00 L53.50 18.00 C60.00 10.00 72.00 18.00 76.00 36.00 C82.00 62.00 70.00 84.00 50.00 94.00 Z" fill="url(#sakuraA)" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>

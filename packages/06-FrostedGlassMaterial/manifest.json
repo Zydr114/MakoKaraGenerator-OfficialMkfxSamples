@@ -1,0 +1,174 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.frosted-glass",
+  "name": "毛玻璃效果材质",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "graphs/frosted-glass.graph.json",
+      "role": "graph",
+      "sha256": "a9cbee07b6185fcdec1e19b84c95f75c8b95a43b8b8379e58b2003ab4fd8602b"
+    },
+    {
+      "path": "shaders/frosted-glass.program.json",
+      "role": "shaderProgram",
+      "sha256": "4e2986af932af67fe0ed5adf96b7eb2a589ed44b2adcb2ddaab8e4dadce0f20d"
+    },
+    {
+      "path": "shaders/frosted-glass.sksl",
+      "role": "shader",
+      "sha256": "54bc1f1d03f60b5de411f318edce71583f11940e732d5305d9358f104aa22000"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "22cc80c4881eb251ac27f529662c1d96a80f327b25c457b8120f219202f55bc9"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "media",
+      "id": "backdropSource",
+      "label": "采样来源",
+      "type": "enum",
+      "values": [
+        {
+          "label": "底层背景媒体",
+          "value": "media"
+        },
+        {
+          "label": "真实下层合成画面",
+          "value": "below"
+        }
+      ]
+    },
+    {
+      "default": 16,
+      "id": "blurPx",
+      "label": "柔焦模糊半径",
+      "max": 32,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 2.2,
+      "id": "grainScatterPx",
+      "label": "磨砂散射半径",
+      "max": 8,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.06,
+      "id": "grainAmount",
+      "label": "磨砂颗粒质感",
+      "max": 0.25,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 0.28,
+      "id": "highlight",
+      "label": "缎面高光强度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": {
+        "a": 1,
+        "b": 1,
+        "g": 0.97,
+        "r": 0.95
+      },
+      "id": "tintColor",
+      "label": "磨砂雾面色",
+      "type": "color"
+    },
+    {
+      "default": 0.22,
+      "id": "tintStrength",
+      "label": "雾面染色浓度",
+      "max": 0.85,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 0.86,
+      "id": "opacity",
+      "label": "玻璃不透明度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    }
+  ],
+  "exports": [
+    {
+      "coverageMode": "masked",
+      "fallback": {
+        "gradient": {
+          "angleDegrees": 150,
+          "centerX": 0.5,
+          "centerY": 0.5,
+          "colorSpace": "LinearRgb",
+          "coordinateSpace": "Line",
+          "huePath": "Shorter",
+          "kind": "Linear",
+          "radiusX": 0.5,
+          "radiusY": 0.5,
+          "stops": [
+            {
+              "color": "#F2F7FFEB",
+              "offset": 0
+            },
+            {
+              "color": "#CFDDF2D8",
+              "offset": 1
+            }
+          ]
+        },
+        "kind": "gradient"
+      },
+      "graph": "graphs/frosted-glass.graph.json",
+      "id": "frosted-glass",
+      "kind": "material",
+      "name": "毛玻璃材质",
+      "outputs": [
+        {
+          "bypass": {
+            "kind": "materialFallback",
+            "mapping": "identity"
+          },
+          "dependsOn": [],
+          "id": "color",
+          "kind": "ImageGraph",
+          "requires": [],
+          "target": "region"
+        }
+      ],
+      "parameters": [
+        "backdropSource",
+        "blurPx",
+        "grainScatterPx",
+        "grainAmount",
+        "highlight",
+        "tintColor",
+        "tintStrength",
+        "opacity"
+      ],
+      "regions": [
+        "fill",
+        "stroke"
+      ]
+    }
+  ],
+  "requires": [],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

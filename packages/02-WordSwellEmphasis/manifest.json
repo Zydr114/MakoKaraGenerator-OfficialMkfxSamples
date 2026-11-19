@@ -1,0 +1,127 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.word-swell-emphasis",
+  "name": "逐字强调",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/WordSwellEmphasis.cs",
+      "role": "csharp",
+      "sha256": "ff95cd33a2794be467f8872be9e6d6572b6f8162ec73fdb019cad2eb01601708"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "30e5d696f76b84bf9d91e6b22900c826589323077a8c0f265f9d831e24abf6fb"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 1.38,
+      "id": "peakScale",
+      "label": "峰值放大比例",
+      "max": 4,
+      "min": 1,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": -4,
+      "id": "liftPx",
+      "label": "峰值上浮偏移",
+      "max": 40,
+      "min": -40,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 220000,
+      "id": "returnUs",
+      "label": "回落复原时长",
+      "max": 2000000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": {
+        "easing": "easeInOut",
+        "kind": "easing"
+      },
+      "id": "growCurve",
+      "label": "膨胀曲线",
+      "type": "curve"
+    },
+    {
+      "default": {
+        "easing": "easeOut",
+        "kind": "easing"
+      },
+      "id": "returnCurve",
+      "label": "回落曲线",
+      "type": "curve"
+    },
+    {
+      "default": "center",
+      "id": "anchor",
+      "label": "缩放支点",
+      "type": "enum",
+      "values": [
+        {
+          "label": "字框中心",
+          "value": "center"
+        },
+        {
+          "label": "基线中心",
+          "value": "baseline"
+        },
+        {
+          "label": "字框底部",
+          "value": "bottom"
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "WordSwellEmphasis",
+      "id": "word-swell-emphasis",
+      "kind": "controller",
+      "name": "逐字强调",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "scale",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "tokenFamily"
+        }
+      ],
+      "parameters": [
+        "peakScale",
+        "liftPx",
+        "returnUs",
+        "growCurve",
+        "returnCurve",
+        "anchor"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

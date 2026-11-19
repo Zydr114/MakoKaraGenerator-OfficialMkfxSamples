@@ -1,0 +1,193 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.beat-pulse-neon",
+  "name": "音律脉冲霓虹",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/BeatPulseNeon.cs",
+      "role": "csharp",
+      "sha256": "f08b6fa3a766c1aea74a42d475a82a8ffc95e400210491b1425471de4af4deb7"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "57ed9753dc58ae328bce36866b8e17a26655b2dc59bda5470c56ef5221413608"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 1.24,
+      "id": "maxBeatScale",
+      "label": "节拍脉冲放大上限",
+      "max": 2.5,
+      "min": 1,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": 8,
+      "id": "glowBaseBlurPx",
+      "label": "基础霓虹辉光半径",
+      "max": 48,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 14,
+      "id": "glowPulseBlurPx",
+      "label": "脉冲额外辉光半径",
+      "max": 48,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.9,
+      "id": "glowOpacity",
+      "label": "霓虹辉光不透明度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 124,
+      "id": "fallbackBpm",
+      "label": "未分析音频时备用BPM",
+      "max": 240,
+      "min": 0,
+      "type": "number",
+      "unit": "BPM"
+    },
+    {
+      "default": true,
+      "id": "showEqualizer",
+      "label": "显示字后音频频谱条",
+      "type": "boolean"
+    },
+    {
+      "default": 24,
+      "id": "barCount",
+      "label": "频谱条数量",
+      "max": 64,
+      "min": 4,
+      "type": "integer"
+    },
+    {
+      "default": 3.5,
+      "id": "barWidthPx",
+      "label": "频谱条线宽",
+      "max": 12,
+      "min": 1,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 26,
+      "id": "barMaxHeightPx",
+      "label": "频谱条最大高度",
+      "max": 96,
+      "min": 4,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 10,
+      "id": "barOffsetPx",
+      "label": "频谱条距底边偏移",
+      "max": 60,
+      "min": -40,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": {
+        "a": 0.9,
+        "b": 1,
+        "g": 0.9,
+        "r": 0.17
+      },
+      "id": "primaryNeon",
+      "label": "主霓虹色",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 0.9,
+        "b": 0.62,
+        "g": 0.24,
+        "r": 1
+      },
+      "id": "accentNeon",
+      "label": "副霓虹色",
+      "type": "color"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "BeatPulseNeon",
+      "id": "beat-pulse-neon",
+      "kind": "controller",
+      "name": "音律脉冲霓虹",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "scale",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "neon",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "spectrum",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.segments"
+          ],
+          "target": "canvas"
+        }
+      ],
+      "parameters": [
+        "maxBeatScale",
+        "glowBaseBlurPx",
+        "glowPulseBlurPx",
+        "glowOpacity",
+        "fallbackBpm",
+        "showEqualizer",
+        "barCount",
+        "barWidthPx",
+        "barMaxHeightPx",
+        "barOffsetPx",
+        "primaryNeon",
+        "accentNeon"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "style.glow",
+    "visuals.segments"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

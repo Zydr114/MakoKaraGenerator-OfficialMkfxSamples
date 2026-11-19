@@ -1,0 +1,62 @@
+uniform float timeSeconds;
+uniform float refractionPx;
+uniform float dispersion;
+uniform float flowHz;
+uniform float highlight;
+layout(color) uniform float4 tintColor;
+uniform float tintStrength;
+uniform float opacity;
+uniform shader background;
+uniform shader coverage;
+
+half4 main(float2 p) {
+    float cov = clamp(float(coverage.eval(p).a), 0.0, 1.0);
+    float covL = float(coverage.eval(p - float2(1.5, 0.0)).a);
+    float covR = float(coverage.eval(p + float2(1.5, 0.0)).a);
+    float covU = float(coverage.eval(p - float2(0.0, 1.5)).a);
+    float covD = float(coverage.eval(p + float2(0.0, 1.5)).a);
+
+    // 字符轮廓局部法线：外沿呈液态弯月面折射，形成立体透镜边缘
+    float2 grad = float2(covL - covR, covU - covD);
+    float gradLen = length(grad);
+    float2 normal = gradLen > 0.001 ? grad / gradLen : float2(0.0, 0.0);
+    float rim = clamp(gradLen * 1.4, 0.0, 1.0);
+
+    float phase = 6.2831853 * flowHz * timeSeconds;
+    float2 flow = float2(
+        sin(0.048 * p.y + 0.018 * p.x + phase) + 0.45 * cos(0.095 * p.x - 0.04 * p.y - phase * 0.7),
+        cos(0.042 * p.x - 0.015 * p.y - phase * 0.85) + 0.45 * sin(0.085 * p.y + 0.03 * p.x + phase * 0.6)
+    ) * 0.48;
+
+    float2 rawDir = flow + normal * (0.75 * rim);
+    float rawMag = length(rawDir);
+    float2 unitDir = rawMag > 1.0 ? rawDir / rawMag : rawDir;
+
+    float dispScale = 0.25 * clamp(dispersion, 0.0, 1.0);
+    float2 baseOffset = unitDir * (refractionPx / (1.0 + dispScale));
+
+    half4 sR = background.eval(p + baseOffset * (1.0 + dispScale));
+    half4 sG = background.eval(p + baseOffset);
+    half4 sB = background.eval(p + baseOffset * (1.0 - dispScale));
+
+    float3 rgbR = sR.a > 0.0001 ? float3(sR.rgb) / float(sR.a) : float3(0.0);
+    float3 rgbG = sG.a > 0.0001 ? float3(sG.rgb) / float(sG.a) : float3(0.0);
+    float3 rgbB = sB.a > 0.0001 ? float3(sB.rgb) / float(sB.a) : float3(0.0);
+    float3 refracted = float3(rgbR.r, rgbG.g, rgbB.b);
+
+    float3 tinted = mix(refracted, tintColor.rgb, clamp(tintStrength, 0.0, 1.0));
+
+    // 左上主镜面高光 + 液态流光扫掠 + 底部次级焦散反光
+    float2 lightDir = normalize(float2(-0.68, -0.73));
+    float fresnelRim = pow(clamp(dot(normal, lightDir), 0.0, 1.0), 1.6) * rim;
+    float bounceRim = pow(clamp(dot(normal, -lightDir), 0.0, 1.0), 2.0) * rim * 0.45;
+    float sweepWave = 0.5 + 0.5 * sin(0.028 * p.x - 0.042 * p.y + phase * 0.8);
+    float glossBand = pow(sweepWave, 5.0) * 0.42;
+
+    float spec = clamp(highlight, 0.0, 1.0) * (fresnelRim * 1.15 + bounceRim + glossBand + 0.10 * rim);
+    float3 lit = clamp(tinted + float3(spec), 0.0, 1.0);
+
+    float bgAlpha = clamp((float(sR.a) + float(sG.a) + float(sB.a)) / 3.0, 0.0, 1.0);
+    float alpha = clamp(cov * clamp(opacity, 0.0, 1.0) * bgAlpha, 0.0, 1.0);
+    return half4(lit * alpha, alpha);
+}

@@ -1,0 +1,40 @@
+uniform float timeSeconds;
+uniform float aberrationPx;
+uniform float bloomStrength;
+uniform float iridescence;
+uniform float shimmerHz;
+uniform shader original;
+uniform shader bloom;
+uniform shader sung;
+
+half4 main(float2 p) {
+    half4 orig = original.eval(p);
+    half4 bloomSample = bloom.eval(p);
+    float sMask = clamp(float(sung.eval(p).a), 0.0, 1.0);
+
+    // 对已唱部分施加水平RGB棱镜微色散；未唱部分保持原样锐利清晰
+    float shift = aberrationPx * sMask;
+    half4 sR = original.eval(p + float2(shift, 0.0));
+    half4 sB = original.eval(p - float2(shift, 0.0));
+
+    float3 dispPremul = float3(
+        mix(float(orig.r), float(sR.r), sMask),
+        float(orig.g),
+        mix(float(orig.b), float(sB.b), sMask)
+    );
+    float edgeAlpha = max(float(orig.a), max(float(sR.a), float(sB.a)));
+    float dispAlpha = clamp(mix(float(orig.a), edgeAlpha, sMask), 0.0, 1.0);
+
+    // 随时间和空间流动的全息虹彩光波
+    float wavePhase = 0.024 * p.x - 0.018 * p.y - 6.2831853 * shimmerHz * timeSeconds;
+    float3 holo = 0.5 + 0.5 * cos(wavePhase + float3(0.0, 2.0943951, 4.1887902));
+
+    float3 sheen = holo * (clamp(iridescence, 0.0, 1.0) * 0.42 * sMask * float(orig.a));
+    float bloomAmt = max(0.0, bloomStrength);
+    float3 bloomColored = mix(float3(bloomSample.rgb), holo * float(bloomSample.a), 0.5 * clamp(iridescence, 0.0, 1.0));
+    float3 halo = bloomColored * bloomAmt;
+
+    float outAlpha = clamp(dispAlpha + float(bloomSample.a) * bloomAmt * (1.0 - dispAlpha), 0.0, 1.0);
+    float3 outRgb = clamp(dispPremul + sheen + halo * (1.0 - dispAlpha * 0.55), float3(0.0), float3(outAlpha));
+    return half4(outRgb, outAlpha);
+}

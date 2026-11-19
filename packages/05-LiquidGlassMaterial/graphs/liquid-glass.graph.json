@@ -1,0 +1,96 @@
+{
+  "graphVersion": 1,
+  "id": "liquid-glass",
+  "inputs": [
+    {
+      "id": "coverage",
+      "source": "TargetRegionCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "materialRegion"
+      }
+    },
+    {
+      "id": "background",
+      "source": "parameter:backdropSource",
+      "choices": {
+        "media": "BackgroundMedia",
+        "below": "BackdropBelow"
+      },
+      "type": "color",
+      "availability": "optional",
+      "backgroundRequirement": "media",
+      "space": "canvas"
+    }
+  ],
+  "parameters": [
+    "backdropSource",
+    "blurPx",
+    "refractionPx",
+    "dispersion",
+    "flowHz",
+    "highlight",
+    "tintColor",
+    "tintStrength",
+    "opacity"
+  ],
+  "nodes": [
+    {
+      "id": "blur",
+      "op": "Blur",
+      "input": "input:background",
+      "sigmaPx": "parameter:blurPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:blurPx)",
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "clamp"
+    },
+    {
+      "id": "liquid",
+      "op": "RuntimeShader",
+      "program": "shaders/liquid-glass.program.json",
+      "children": {
+        "background": "node:blur",
+        "coverage": "input:coverage"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "refractionPx": "parameter:refractionPx",
+        "dispersion": "parameter:dispersion",
+        "flowHz": "parameter:flowHz",
+        "highlight": "parameter:highlight",
+        "tintColor": "parameter:tintColor",
+        "tintStrength": "parameter:tintStrength",
+        "opacity": "parameter:opacity"
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": "ceil(1 * parameter:refractionPx)",
+        "maxExpandPx": 20,
+        "maxSampleOffsetPx": 24
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:liquid",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 72
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

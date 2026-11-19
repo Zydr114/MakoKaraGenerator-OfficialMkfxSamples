@@ -1,0 +1,41 @@
+{
+  "programVersion": 1,
+  "source": "shaders/holo-prism.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    {
+      "name": "timeSeconds",
+      "type": "float"
+    },
+    {
+      "name": "aberrationPx",
+      "type": "float"
+    },
+    {
+      "name": "bloomStrength",
+      "type": "float"
+    },
+    {
+      "name": "iridescence",
+      "type": "float"
+    },
+    {
+      "name": "shimmerHz",
+      "type": "float"
+    }
+  ],
+  "children": [
+    {
+      "name": "original",
+      "type": "color"
+    },
+    {
+      "name": "bloom",
+      "type": "color"
+    },
+    {
+      "name": "sung",
+      "type": "coverage"
+    }
+  ]
+}

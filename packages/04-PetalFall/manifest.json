@@ -1,0 +1,215 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.petal-fall",
+  "name": "花瓣飘落",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/PetalFall.cs",
+      "role": "csharp",
+      "sha256": "f5e73d97487e0aee51297c4f57bf9dbbefbfae392c036575ba06c5424a1ef577"
+    },
+    {
+      "path": "assets/petal-a.svg",
+      "role": "svg",
+      "sha256": "4dab709e162bea284689faf822c55cb06e50e872a14cbe70c91fc4729446e351"
+    },
+    {
+      "path": "resources/petal-a.json",
+      "role": "svgResource",
+      "sha256": "b77167508d41bc2f1cb6c88993b8f2082a0a4efea9368c1386feb6c82059fd09"
+    },
+    {
+      "path": "assets/petal-b.svg",
+      "role": "svg",
+      "sha256": "4f84b1efb9267e78437cc3e451f9c4d14fd9f5209425a4d8e4af9cb3d56e4461"
+    },
+    {
+      "path": "resources/petal-b.json",
+      "role": "svgResource",
+      "sha256": "dfd3e64a55793ee2dea2f30d7222f29586dfb9af05939a092ac3862dbf467047"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "c2450068587ee99ed3b77fef7f2cf9f4baa726aeaf81525957725f49dd48566d"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 18,
+      "id": "lineDensity",
+      "label": "行周常驻花瓣数",
+      "max": 36,
+      "min": 0,
+      "type": "integer"
+    },
+    {
+      "default": 2,
+      "id": "burstCount",
+      "label": "逐字惊落花瓣数",
+      "max": 6,
+      "min": 0,
+      "type": "integer"
+    },
+    {
+      "default": 2200000,
+      "id": "lifeUs",
+      "label": "花瓣飘落周期",
+      "max": 4800000,
+      "min": 400000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 20,
+      "id": "sizePx",
+      "label": "花瓣大小",
+      "max": 48,
+      "min": 4,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 54,
+      "id": "fallSpeedPx",
+      "label": "下落速度",
+      "max": 200,
+      "min": 10,
+      "type": "number",
+      "unit": "px/s"
+    },
+    {
+      "default": 26,
+      "id": "windPx",
+      "label": "微风横向漂移",
+      "max": 120,
+      "min": -120,
+      "type": "number",
+      "unit": "px/s"
+    },
+    {
+      "default": 18,
+      "id": "swayPx",
+      "label": "左右摇曳幅度",
+      "max": 64,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 48,
+      "id": "marginPx",
+      "label": "歌词行周围扩散边距",
+      "max": 200,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": {
+        "a": 0.9,
+        "b": 0.93,
+        "g": 0.88,
+        "r": 1
+      },
+      "id": "petalColorA",
+      "label": "主花瓣色调",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 0.88,
+        "b": 0.99,
+        "g": 0.97,
+        "r": 1
+      },
+      "id": "petalColorB",
+      "label": "淡花瓣色调",
+      "type": "color"
+    },
+    {
+      "default": "above",
+      "id": "layer",
+      "label": "绘制层级",
+      "type": "enum",
+      "values": [
+        {
+          "label": "文字上方",
+          "value": "above"
+        },
+        {
+          "label": "文字后方",
+          "value": "behind"
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "PetalFall",
+      "id": "petal-fall",
+      "kind": "controller",
+      "name": "花瓣飘落",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "petal-burst",
+          "kind": "Overlay",
+          "requires": [
+            "particles.burst"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "petals",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.paths",
+            "resources.svg.vector"
+          ],
+          "target": "canvas"
+        }
+      ],
+      "parameters": [
+        "lineDensity",
+        "burstCount",
+        "lifeUs",
+        "sizePx",
+        "fallSpeedPx",
+        "windPx",
+        "swayPx",
+        "marginPx",
+        "petalColorA",
+        "petalColorB",
+        "layer"
+      ]
+    }
+  ],
+  "requires": [
+    "particles.burst",
+    "visuals.paths",
+    "resources.svg.vector"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": [
+    {
+      "id": "petal-burst",
+      "kind": "burst",
+      "maxLifetimeUs": 5000000
+    }
+  ]
+}

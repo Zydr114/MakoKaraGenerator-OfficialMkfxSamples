@@ -1,0 +1,49 @@
+{
+  "programVersion": 1,
+  "source": "shaders/liquid-glass.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    {
+      "name": "timeSeconds",
+      "type": "float"
+    },
+    {
+      "name": "refractionPx",
+      "type": "float"
+    },
+    {
+      "name": "dispersion",
+      "type": "float"
+    },
+    {
+      "name": "flowHz",
+      "type": "float"
+    },
+    {
+      "name": "highlight",
+      "type": "float"
+    },
+    {
+      "name": "tintColor",
+      "type": "color"
+    },
+    {
+      "name": "tintStrength",
+      "type": "float"
+    },
+    {
+      "name": "opacity",
+      "type": "float"
+    }
+  ],
+  "children": [
+    {
+      "name": "background",
+      "type": "color"
+    },
+    {
+      "name": "coverage",
+      "type": "coverage"
+    }
+  ]
+}

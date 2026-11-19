@@ -1,0 +1,93 @@
+{
+  "graphVersion": 1,
+  "id": "frosted-glass",
+  "inputs": [
+    {
+      "id": "coverage",
+      "source": "TargetRegionCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "materialRegion"
+      }
+    },
+    {
+      "id": "background",
+      "source": "parameter:backdropSource",
+      "choices": {
+        "media": "BackgroundMedia",
+        "below": "BackdropBelow"
+      },
+      "type": "color",
+      "availability": "optional",
+      "backgroundRequirement": "media",
+      "space": "canvas"
+    }
+  ],
+  "parameters": [
+    "backdropSource",
+    "blurPx",
+    "grainScatterPx",
+    "grainAmount",
+    "highlight",
+    "tintColor",
+    "tintStrength",
+    "opacity"
+  ],
+  "nodes": [
+    {
+      "id": "blur",
+      "op": "Blur",
+      "input": "input:background",
+      "sigmaPx": "parameter:blurPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:blurPx)",
+        "maxExpandPx": 96,
+        "maxSampleOffsetPx": 96
+      },
+      "edge": "clamp"
+    },
+    {
+      "id": "frosted",
+      "op": "RuntimeShader",
+      "program": "shaders/frosted-glass.program.json",
+      "children": {
+        "background": "node:blur",
+        "coverage": "input:coverage"
+      },
+      "uniforms": {
+        "grainScatterPx": "parameter:grainScatterPx",
+        "grainAmount": "parameter:grainAmount",
+        "highlight": "parameter:highlight",
+        "tintColor": "parameter:tintColor",
+        "tintStrength": "parameter:tintStrength",
+        "opacity": "parameter:opacity"
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": "ceil(1 * parameter:grainScatterPx)",
+        "maxExpandPx": 8,
+        "maxSampleOffsetPx": 10
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:frosted",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 108
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

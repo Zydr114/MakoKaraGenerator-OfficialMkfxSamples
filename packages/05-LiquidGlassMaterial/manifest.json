@@ -1,0 +1,184 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.liquid-glass",
+  "name": "液态玻璃效果材质",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "graphs/liquid-glass.graph.json",
+      "role": "graph",
+      "sha256": "2867ca3b6bf8468e2c4f1d94bdc768dfed2a068d7445a2c5069b72cea330243a"
+    },
+    {
+      "path": "shaders/liquid-glass.program.json",
+      "role": "shaderProgram",
+      "sha256": "76a183ca637526e54cf2dcb079856378ea46c69fccef2e8900360d2a5a41581f"
+    },
+    {
+      "path": "shaders/liquid-glass.sksl",
+      "role": "shader",
+      "sha256": "3e2b4b28b9c1232749bcfad001c4724a59730759120d33bba5ca43e4579add49"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "9a40565c5426b2cc7638ba8a0d9772f234729e233e3cfd9ea2b9494fbed51de4"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "media",
+      "id": "backdropSource",
+      "label": "采样来源",
+      "type": "enum",
+      "values": [
+        {
+          "label": "底层背景媒体",
+          "value": "media"
+        },
+        {
+          "label": "真实下层合成画面",
+          "value": "below"
+        }
+      ]
+    },
+    {
+      "default": 4.5,
+      "id": "blurPx",
+      "label": "透射模糊半径",
+      "max": 16,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 8,
+      "id": "refractionPx",
+      "label": "液态折射偏移",
+      "max": 20,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.35,
+      "id": "dispersion",
+      "label": "色散棱镜强度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 0.6,
+      "id": "flowHz",
+      "label": "液面流动频率",
+      "max": 8,
+      "min": 0,
+      "type": "number",
+      "unit": "Hz"
+    },
+    {
+      "default": 0.45,
+      "id": "highlight",
+      "label": "边缘与镜面高光",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": {
+        "a": 1,
+        "b": 1,
+        "g": 0.95,
+        "r": 0.86
+      },
+      "id": "tintColor",
+      "label": "玻璃清透色调",
+      "type": "color"
+    },
+    {
+      "default": 0.14,
+      "id": "tintStrength",
+      "label": "染色浓度",
+      "max": 0.8,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 0.88,
+      "id": "opacity",
+      "label": "玻璃不透明度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    }
+  ],
+  "exports": [
+    {
+      "coverageMode": "masked",
+      "fallback": {
+        "gradient": {
+          "angleDegrees": 135,
+          "centerX": 0.5,
+          "centerY": 0.5,
+          "colorSpace": "LinearRgb",
+          "coordinateSpace": "Line",
+          "huePath": "Shorter",
+          "kind": "Linear",
+          "radiusX": 0.5,
+          "radiusY": 0.5,
+          "stops": [
+            {
+              "color": "#CBEFFFDF",
+              "offset": 0
+            },
+            {
+              "color": "#5CAFEAD8",
+              "offset": 1
+            }
+          ]
+        },
+        "kind": "gradient"
+      },
+      "graph": "graphs/liquid-glass.graph.json",
+      "id": "liquid-glass",
+      "kind": "material",
+      "name": "液态玻璃材质",
+      "outputs": [
+        {
+          "bypass": {
+            "kind": "materialFallback",
+            "mapping": "identity"
+          },
+          "dependsOn": [],
+          "id": "color",
+          "kind": "ImageGraph",
+          "requires": [],
+          "target": "region"
+        }
+      ],
+      "parameters": [
+        "backdropSource",
+        "blurPx",
+        "refractionPx",
+        "dispersion",
+        "flowHz",
+        "highlight",
+        "tintColor",
+        "tintStrength",
+        "opacity"
+      ],
+      "regions": [
+        "fill",
+        "stroke"
+      ]
+    }
+  ],
+  "requires": [],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

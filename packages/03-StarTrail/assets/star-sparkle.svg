@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="sparkleGlow" gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.6" stop-color="#e8f6ff"/>
+      <stop offset="1" stop-color="#b8e4ff"/>
+    </radialGradient>
+  </defs>
+  <path d="M50.00 4.00 Q54.00 46.00 96.00 50.00 Q54.00 54.00 50.00 96.00 Q46.00 54.00 4.00 50.00 Q46.00 46.00 50.00 4.00 Z" fill="url(#sparkleGlow)" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>

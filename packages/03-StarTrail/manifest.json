@@ -1,0 +1,241 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.star-trail",
+  "name": "星星拖尾",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/StarTrail.cs",
+      "role": "csharp",
+      "sha256": "031a45f33ae21921308008bc814ac7edd5d78a3dc564c06f76b4ab0fb824df7a"
+    },
+    {
+      "path": "assets/star-primary.svg",
+      "role": "svg",
+      "sha256": "2d4d2d95e592feb3da94ea829cac62228267ed9d648a367803ba0dd2416f0797"
+    },
+    {
+      "path": "resources/star-primary.json",
+      "role": "svgResource",
+      "sha256": "82c3b71859d88698e5e8ce4e3fa09ac3ba8ac201f47d771619a1ea6769e5e385"
+    },
+    {
+      "path": "assets/star-sparkle.svg",
+      "role": "svg",
+      "sha256": "0364e5a73cd512cc30518e401ac3e0f0ccee99fdf9cf0eb4f0bc5358b149fe28"
+    },
+    {
+      "path": "resources/star-sparkle.json",
+      "role": "svgResource",
+      "sha256": "8cb7b75907b28539f366ee35f215bb1db81ee8c3616db1a7055679f3a8ce5162"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "4c5e29ea880edbb5bbb4c8e05003e83c8391cbdde339268ec3a937306c4bf217"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 44,
+      "id": "rate",
+      "label": "星尘发射密度",
+      "max": 140,
+      "min": 5,
+      "type": "number",
+      "unit": "/s"
+    },
+    {
+      "default": 1250000,
+      "id": "lifeUs",
+      "label": "星星存活时长",
+      "max": 4000000,
+      "min": 200000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 850000,
+      "id": "trailUs",
+      "label": "光带拖尾时长",
+      "max": 3000000,
+      "min": 100000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 22,
+      "id": "starSizePx",
+      "label": "星星基础尺寸",
+      "max": 64,
+      "min": 4,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 7,
+      "id": "ribbonWidthPx",
+      "label": "轨迹光带宽度",
+      "max": 24,
+      "min": 0.5,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 12,
+      "id": "spreadPx",
+      "label": "星尘散布半宽",
+      "max": 48,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.75,
+      "id": "spinHz",
+      "label": "星星自转频率",
+      "max": 5,
+      "min": 0,
+      "type": "number",
+      "unit": "Hz"
+    },
+    {
+      "default": {
+        "a": 0.96,
+        "b": 0.45,
+        "g": 0.92,
+        "r": 1
+      },
+      "id": "primaryColor",
+      "label": "主星光颜色",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 0.9,
+        "b": 1,
+        "g": 0.88,
+        "r": 0.55
+      },
+      "id": "tailColor",
+      "label": "尾迹渐隐颜色",
+      "type": "color"
+    },
+    {
+      "default": true,
+      "id": "bridgeLines",
+      "label": "跨行飞行拖尾衔接",
+      "type": "boolean"
+    },
+    {
+      "default": 240000,
+      "id": "bridgeUs",
+      "label": "跨行飞行时长",
+      "max": 1000000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 2000000,
+      "id": "bridgeGapLimitUs",
+      "label": "跨行衔接空档上限",
+      "max": 10000000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "StarTrail",
+      "id": "star-trail",
+      "kind": "controller",
+      "name": "星星拖尾",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "spine",
+          "kind": "Overlay",
+          "requires": [
+            "particles.continuous"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "dust",
+          "kind": "Overlay",
+          "requires": [
+            "particles.continuous"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "ribbons",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.trails"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "stars",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.paths",
+            "resources.svg.vector"
+          ],
+          "target": "canvas"
+        }
+      ],
+      "parameters": [
+        "rate",
+        "lifeUs",
+        "trailUs",
+        "starSizePx",
+        "ribbonWidthPx",
+        "spreadPx",
+        "spinHz",
+        "primaryColor",
+        "tailColor",
+        "bridgeLines",
+        "bridgeUs",
+        "bridgeGapLimitUs"
+      ]
+    }
+  ],
+  "requires": [
+    "particles.continuous",
+    "visuals.trails",
+    "visuals.paths",
+    "resources.svg.vector"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": [
+    {
+      "id": "spine",
+      "kind": "cursor",
+      "maxLifetimeUs": 5000000
+    },
+    {
+      "id": "dust",
+      "kind": "cursor",
+      "maxLifetimeUs": 5000000
+    }
+  ]
+}

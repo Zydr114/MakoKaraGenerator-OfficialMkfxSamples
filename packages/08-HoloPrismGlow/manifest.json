@@ -1,0 +1,113 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.holo-prism-glow",
+  "name": "全息棱镜辉光",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "graphs/holo-prism.graph.json",
+      "role": "graph",
+      "sha256": "d50d39a4834fc7c909fcdee2d4c2251c04a31f797a7d42988936205122e3962e"
+    },
+    {
+      "path": "shaders/holo-prism.program.json",
+      "role": "shaderProgram",
+      "sha256": "a013bd565331afa3b068e70d87b5f9f074193a8febda50a71e60335edd179826"
+    },
+    {
+      "path": "shaders/holo-prism.sksl",
+      "role": "shader",
+      "sha256": "290e9a28e102556c54e10fce6c96005a311478c442a4ceb86127dff28c39edd9"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "8909f9c130848e1378a19002fbe08a9330f31b210b0c7c01713e81f385d83c9b"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 2.5,
+      "id": "aberrationPx",
+      "label": "RGB棱镜色散偏移",
+      "max": 10,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 9,
+      "id": "bloomSigmaPx",
+      "label": "辉光扩散半径",
+      "max": 16,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.75,
+      "id": "bloomStrength",
+      "label": "辉光亮度增益",
+      "max": 2,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 0.45,
+      "id": "iridescence",
+      "label": "全息虹彩浓度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 1.2,
+      "id": "shimmerHz",
+      "label": "流光扫掠频率",
+      "max": 6,
+      "min": 0,
+      "type": "number",
+      "unit": "Hz"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "graph": "graphs/holo-prism.graph.json",
+      "id": "holo-prism-glow",
+      "kind": "graph",
+      "name": "全息棱镜辉光",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "requires": [],
+          "target": "line"
+        }
+      ],
+      "parameters": [
+        "aberrationPx",
+        "bloomSigmaPx",
+        "bloomStrength",
+        "iridescence",
+        "shimmerHz"
+      ]
+    }
+  ],
+  "requires": [
+    "image.graph"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

@@ -1,0 +1,9 @@
+# 本地构建与验证产物（仓库内仅保留展开后的效果包目录，不提交 .mkfx 归档）
+.artifacts/
+.script-cache/
+dist/
+out/
+*.mkfx
+__pycache__/
+*.pyc
+.DS_Store

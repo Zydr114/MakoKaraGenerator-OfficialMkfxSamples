@@ -1,0 +1,107 @@
+{
+  "graphVersion": 1,
+  "id": "holo-prism-glow",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    },
+    {
+      "id": "sung",
+      "source": "SungCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    }
+  ],
+  "parameters": [
+    "aberrationPx",
+    "bloomSigmaPx",
+    "bloomStrength",
+    "iridescence",
+    "shimmerHz"
+  ],
+  "nodes": [
+    {
+      "id": "sungOnly",
+      "op": "Mask",
+      "color": "input:original",
+      "coverage": "input:sung",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "bloom",
+      "op": "Blur",
+      "input": "node:sungOnly",
+      "sigmaPx": "parameter:bloomSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:bloomSigmaPx)",
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "prism",
+      "op": "RuntimeShader",
+      "program": "shaders/holo-prism.program.json",
+      "children": {
+        "original": "input:original",
+        "bloom": "node:bloom",
+        "sung": "input:sung"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "aberrationPx": "parameter:aberrationPx",
+        "bloomStrength": "parameter:bloomStrength",
+        "iridescence": "parameter:iridescence",
+        "shimmerHz": "parameter:shimmerHz"
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": "ceil(1 * parameter:aberrationPx)",
+        "maxExpandPx": 10,
+        "maxSampleOffsetPx": 10
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:prism",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 64
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}
