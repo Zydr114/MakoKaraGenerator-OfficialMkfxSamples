@@ -21,6 +21,7 @@ internal static class Scenarios
     private static readonly long[] ExitTimes = [2_750_000, 3_250_000, 4_900_000, 5_200_000, 6_400_000];
     private static readonly long[] RubySwellTimes = [2_180_000, 2_400_000, 3_120_000, 3_320_000, 3_450_000];
     private static readonly long[] RubyBurstTimes = [2_060_000, 2_310_000, 3_060_000, 3_250_000];
+    private static readonly long[] FlipTimes = [2_250_000, 2_420_000, 3_250_000, 5_200_000, 5_400_000, 6_400_000];
 
     internal static IReadOnlyList<Scenario> All { get; } =
     [
@@ -93,6 +94,25 @@ internal static class Scenarios
             (project, package) => WithInstance(WithSampleRuby(project), package, "ruby-split-emphasis",
                 """{"emphasisMode":"burst","basePeakScale":1.42,"rubyPeakScale":1.65,"returnUs":180000}"""),
             RubyBurstTimes),
+
+        new("WordFlipTransition", "default",
+            (project, package) => WithInstance(project, package, "word-flip-transition"),
+            FlipTimes),
+        new("WordFlipTransition", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "word-flip-transition"),
+            FlipTimes),
+        new("WordFlipTransition", "rtl-exit",
+            (project, package) => WithInstance(project, package, "word-flip-transition",
+                """{"exitOrder":"rtl","exitMirrorAngles":false}"""),
+            FlipTimes),
+
+        new("SparkleWake", "default",
+            (project, package) => WithInstance(project, package, "sparkle-wake"),
+            TrailTimes),
+        new("SparkleWake", "tilted-short",
+            (project, package) => WithInstance(project, package, "sparkle-wake",
+                """{"lengthPx":110,"maxTiltDeg":22,"spinHz":0.6,"driftSpeedPx":8,"layer":"behind"}"""),
+            TrailTimes),
     ];
 
     internal static ProjectAudioAnalysis CreateSyntheticAudioAnalysis(long durationUs)

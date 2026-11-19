@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="sparkleCore" gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="0.7" stop-color="#ffffff" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#f7f7f7" stop-opacity="0.94"/>
+    </radialGradient>
+  </defs>
+  <path d="M50.00 3.00 C53.00 41.00 59.00 47.00 97.00 50.00 C59.00 53.00 53.00 59.00 50.00 97.00 C47.00 59.00 41.00 53.00 3.00 50.00 C41.00 47.00 47.00 41.00 50.00 3.00 Z" fill="url(#sparkleCore)" stroke="#ffffff" stroke-opacity="0.5" stroke-width="1.5" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,237 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.sparkle-wake",
+  "name": "星芒尾迹",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/SparkleWake.cs",
+      "role": "csharp",
+      "sha256": "a55d6bbe6e9f539e8e302f1d75a9843c0d27845e738ea84baac4ff2bc4f7cfc1"
+    },
+    {
+      "path": "assets/sparkle.svg",
+      "role": "svg",
+      "sha256": "993afb13ecc9d683bab2ed72350e3b13635aefa2eeaaef1c1627c57d506d1ceb"
+    },
+    {
+      "path": "resources/sparkle.json",
+      "role": "svgResource",
+      "sha256": "c3fb0ea1c7fda1d91bf67b0f7adedb071f5534a36d288811166208c9836cf611"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "109e1ebb6d4497f50a5f2f0a8911ff53182383cdd7594ec5abf2adbcd3516179"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 28,
+      "id": "rate",
+      "label": "星芒生成速率",
+      "max": 120,
+      "min": 2,
+      "type": "number",
+      "unit": "/s"
+    },
+    {
+      "default": 180,
+      "id": "lengthPx",
+      "label": "分布长度",
+      "max": 800,
+      "min": 20,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 1200000,
+      "id": "lifeUs",
+      "label": "最大存活时长",
+      "max": 5000000,
+      "min": 200000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 19,
+      "id": "starSizePx",
+      "label": "星星基础尺寸",
+      "max": 48,
+      "min": 4,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 1.08,
+      "id": "heightScale",
+      "label": "字形高度分布比例",
+      "max": 2,
+      "min": 0.3,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": 8,
+      "id": "spreadXPx",
+      "label": "播放头横向抖动",
+      "max": 48,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0,
+      "id": "driftSpeedPx",
+      "label": "微幅飘移速度",
+      "max": 60,
+      "min": 0,
+      "type": "number",
+      "unit": "px/s"
+    },
+    {
+      "default": 0,
+      "id": "maxTiltDeg",
+      "label": "随机倾角幅度",
+      "max": 45,
+      "min": 0,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": 0,
+      "id": "spinHz",
+      "label": "慢速自转频率",
+      "max": 3,
+      "min": 0,
+      "type": "number",
+      "unit": "Hz"
+    },
+    {
+      "default": 0.35,
+      "id": "twinkleStrength",
+      "label": "闪烁呼吸幅度",
+      "max": 0.8,
+      "min": 0,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": {
+        "a": 0.98,
+        "b": 1,
+        "g": 0.84,
+        "r": 0.32
+      },
+      "id": "colorA",
+      "label": "星芒颜色 A",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 0.98,
+        "b": 0.22,
+        "g": 0.6,
+        "r": 1
+      },
+      "id": "colorB",
+      "label": "星芒颜色 B",
+      "type": "color"
+    },
+    {
+      "default": 0.5,
+      "id": "colorRatio",
+      "label": "颜色 A 占比",
+      "max": 1,
+      "min": 0,
+      "type": "number",
+      "unit": "比例"
+    },
+    {
+      "default": "above",
+      "id": "layer",
+      "label": "绘制层级",
+      "type": "enum",
+      "values": [
+        {
+          "label": "文字上方",
+          "value": "above"
+        },
+        {
+          "label": "文字后方",
+          "value": "behind"
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "SparkleWake",
+      "id": "sparkle-wake",
+      "kind": "controller",
+      "name": "星芒尾迹",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "sparkles",
+          "kind": "Overlay",
+          "requires": [
+            "particles.continuous"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "stars",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.paths",
+            "resources.svg.vector"
+          ],
+          "target": "canvas"
+        }
+      ],
+      "parameters": [
+        "rate",
+        "lengthPx",
+        "lifeUs",
+        "starSizePx",
+        "heightScale",
+        "spreadXPx",
+        "driftSpeedPx",
+        "maxTiltDeg",
+        "spinHz",
+        "twinkleStrength",
+        "colorA",
+        "colorB",
+        "colorRatio",
+        "layer"
+      ]
+    }
+  ],
+  "requires": [
+    "particles.continuous",
+    "visuals.paths",
+    "resources.svg.vector"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": [
+    {
+      "id": "sparkles",
+      "kind": "cursor",
+      "maxLifetimeUs": 5000000
+    }
+  ]
+}

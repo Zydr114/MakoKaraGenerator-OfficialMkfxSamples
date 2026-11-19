@@ -1,0 +1,275 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.word-flip-transition",
+  "name": "逐字翻转出入场",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/WordFlipTransition.cs",
+      "role": "csharp",
+      "sha256": "bd87fed5567d266871529c713cc94ec8bdbfff7e07ae1524d8c9ee347e7a4f9a"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "e8ee8ccdb35a58de7e562ef5ad17a527c670f2fcda6fd7cb0228d5055efd521c"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 420000,
+      "id": "enterCharUs",
+      "label": "单字入场时长",
+      "max": 2000000,
+      "min": 50000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 65000,
+      "id": "enterStaggerUs",
+      "label": "入场字间延迟",
+      "max": 500000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": "ltr",
+      "id": "enterOrder",
+      "label": "入场顺序",
+      "type": "enum",
+      "values": [
+        {
+          "label": "从左往右",
+          "value": "ltr"
+        },
+        {
+          "label": "从右往左",
+          "value": "rtl"
+        }
+      ]
+    },
+    {
+      "default": {
+        "first": [
+          0.22,
+          0.55
+        ],
+        "kind": "cubicBezier",
+        "second": [
+          0.35,
+          1
+        ]
+      },
+      "id": "enterCurve",
+      "label": "入场变换曲线",
+      "type": "curve"
+    },
+    {
+      "default": {
+        "first": [
+          0.05,
+          0.65
+        ],
+        "kind": "cubicBezier",
+        "second": [
+          0.25,
+          1
+        ]
+      },
+      "id": "enterOpacityCurve",
+      "label": "入场淡入曲线",
+      "type": "curve"
+    },
+    {
+      "default": 380000,
+      "id": "exitCharUs",
+      "label": "单字出场时长",
+      "max": 2000000,
+      "min": 50000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 55000,
+      "id": "exitStaggerUs",
+      "label": "出场字间延迟",
+      "max": 500000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": "ltr",
+      "id": "exitOrder",
+      "label": "出场顺序",
+      "type": "enum",
+      "values": [
+        {
+          "label": "从左往右",
+          "value": "ltr"
+        },
+        {
+          "label": "从右往左",
+          "value": "rtl"
+        }
+      ]
+    },
+    {
+      "default": {
+        "first": [
+          0.55,
+          0
+        ],
+        "kind": "cubicBezier",
+        "second": [
+          0.78,
+          0.45
+        ]
+      },
+      "id": "exitCurve",
+      "label": "出场变换曲线",
+      "type": "curve"
+    },
+    {
+      "default": {
+        "first": [
+          0.75,
+          0
+        ],
+        "kind": "cubicBezier",
+        "second": [
+          0.95,
+          0.35
+        ]
+      },
+      "id": "exitOpacityCurve",
+      "label": "出场淡出曲线",
+      "type": "curve"
+    },
+    {
+      "default": true,
+      "id": "exitMirrorAngles",
+      "label": "出场反向翻转",
+      "type": "boolean"
+    },
+    {
+      "default": -75,
+      "id": "rotateXDeg",
+      "label": "起始 X 轴倾角",
+      "max": 180,
+      "min": -180,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": 90,
+      "id": "rotateYDeg",
+      "label": "起始 Y 轴翻折角",
+      "max": 180,
+      "min": -180,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": 30,
+      "id": "rotateZDeg",
+      "label": "起始 Z 轴旋转角",
+      "max": 180,
+      "min": -180,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": 1,
+      "id": "edgeScale",
+      "label": "边缘态缩放比例",
+      "max": 2,
+      "min": 0.2,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": "center",
+      "id": "anchor",
+      "label": "旋转支点",
+      "type": "enum",
+      "values": [
+        {
+          "label": "字框中心",
+          "value": "center"
+        },
+        {
+          "label": "基线中心",
+          "value": "baseline"
+        },
+        {
+          "label": "字框底部",
+          "value": "bottom"
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "WordFlipTransition",
+      "id": "word-flip-transition",
+      "kind": "controller",
+      "name": "逐字翻转出入场",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "flip-transform",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "flip-opacity",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "tokenFamily"
+        }
+      ],
+      "parameters": [
+        "enterCharUs",
+        "enterStaggerUs",
+        "enterOrder",
+        "enterCurve",
+        "enterOpacityCurve",
+        "exitCharUs",
+        "exitStaggerUs",
+        "exitOrder",
+        "exitCurve",
+        "exitOpacityCurve",
+        "exitMirrorAngles",
+        "rotateXDeg",
+        "rotateYDeg",
+        "rotateZDeg",
+        "edgeScale",
+        "anchor"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "token.opacity",
+    "line.exit"
+  ],
+  "lineExit": {
+    "durationUs": 2000000
+  },
+  "emitters": []
+}
