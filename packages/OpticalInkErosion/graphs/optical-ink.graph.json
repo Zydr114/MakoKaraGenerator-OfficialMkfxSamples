@@ -1,0 +1,144 @@
+{
+  "graphVersion": 1,
+  "id": "optical-ink-line",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    },
+    {
+      "id": "glyph",
+      "source": "GlyphCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    },
+    {
+      "id": "background",
+      "source": "parameter:backdropSource",
+      "choices": {
+        "media": "BackgroundMedia",
+        "below": "BackdropBelow"
+      },
+      "type": "color",
+      "availability": "optional",
+      "backgroundRequirement": "media",
+      "space": "canvas"
+    }
+  ],
+  "parameters": [
+    "backdropSource"
+  ],
+  "nodes": [
+    {
+      "id": "bgSmooth",
+      "op": "Blur",
+      "input": "input:background",
+      "sigmaPx": 3.0,
+      "bounds": {
+        "expandPx": 9,
+        "maxExpandPx": 9,
+        "maxSampleOffsetPx": 9
+      },
+      "edge": "clamp"
+    },
+    {
+      "id": "ink",
+      "op": "RuntimeShader",
+      "program": "shaders/optical-ink.program.json",
+      "children": {
+        "original": "input:original",
+        "glyph": "input:glyph",
+        "bgSharp": "input:background",
+        "bgSmooth": "node:bgSmooth"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "canvasSize": "host:canvasSize",
+        "enterProgress": 1.0,
+        "exitProgress": 0.0,
+        "allSung": 0.0,
+        "sungCutoffX": -10000.0,
+        "lineBounds": [0, 0, 1280, 720],
+        "windGlobal": [0, 0, 0, 0],
+        "windLocal": [
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
+        ],
+        "audioState": [0, 0, 0, 0],
+        "inkTint": { "r": 0.04, "g": 0.04, "b": 0.06, "a": 1.0 },
+        "metalTint": { "r": 0.86, "g": 0.90, "b": 0.96, "a": 1.0 },
+        "invertThreshold": 0.44,
+        "edgeSensitivity": 1.25,
+        "inkTailLengthPx": 135.0,
+        "burstRadiusPx": 92.0,
+        "climbStrength": 1.15,
+        "exitWashPx": 165.0,
+        "slotCount": 0,
+        "slotRects": [
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
+        ],
+        "slotStates": [
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0,
+          0, 0, 0, 0
+        ]
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 220,
+        "maxExpandPx": 220,
+        "maxSampleOffsetPx": 240
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:ink",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 236
+  },
+  "composite": {
+    "mode": "sourceOver"
+  },
+  "bypassInput": "input:original"
+}

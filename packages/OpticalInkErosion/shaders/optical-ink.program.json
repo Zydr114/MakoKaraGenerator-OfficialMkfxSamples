@@ -1,0 +1,34 @@
+{
+  "programVersion": 1,
+  "source": "shaders/optical-ink.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    { "name": "timeSeconds", "type": "float" },
+    { "name": "canvasSize", "type": "float2" },
+    { "name": "enterProgress", "type": "float" },
+    { "name": "exitProgress", "type": "float" },
+    { "name": "allSung", "type": "float" },
+    { "name": "sungCutoffX", "type": "float" },
+    { "name": "lineBounds", "type": "float4" },
+    { "name": "windGlobal", "type": "float4" },
+    { "name": "windLocal", "type": "float4", "arrayLength": 4 },
+    { "name": "audioState", "type": "float4" },
+    { "name": "inkTint", "type": "color" },
+    { "name": "metalTint", "type": "color" },
+    { "name": "invertThreshold", "type": "float" },
+    { "name": "edgeSensitivity", "type": "float" },
+    { "name": "inkTailLengthPx", "type": "float" },
+    { "name": "burstRadiusPx", "type": "float" },
+    { "name": "climbStrength", "type": "float" },
+    { "name": "exitWashPx", "type": "float" },
+    { "name": "slotCount", "type": "int" },
+    { "name": "slotRects", "type": "float4", "arrayLength": 8 },
+    { "name": "slotStates", "type": "float4", "arrayLength": 8 }
+  ],
+  "children": [
+    { "name": "original", "type": "color" },
+    { "name": "glyph", "type": "coverage" },
+    { "name": "bgSharp", "type": "color" },
+    { "name": "bgSmooth", "type": "color" }
+  ]
+}

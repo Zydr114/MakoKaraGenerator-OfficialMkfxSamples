@@ -125,6 +125,19 @@ internal static class Scenarios
             (project, package) => WithInstance(WithSampleRuby(project), package, "refractive-prism-crystal",
                 """{"backdropSource":"below"}"""),
             ExitTimes),
+
+        new("OpticalInkErosion", "default",
+            (project, package) => WithInstance(project, package, "optical-ink-erosion"),
+            DefaultTimes),
+        new("OpticalInkErosion", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "optical-ink-erosion"),
+            ExitTimes,
+            WithAudioAnalysis: true),
+        new("OpticalInkErosion", "below-ruby-exit",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "optical-ink-erosion",
+                """{"backdropSource":"below"}"""),
+            ExitTimes,
+            WithAudioAnalysis: true),
     ];
 
     internal static ProjectAudioAnalysis CreateSyntheticAudioAnalysis(long durationUs)

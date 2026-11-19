@@ -1,12 +1,17 @@
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using MakoKaraGenerator.Application;
 using MakoKaraGenerator.Core.Effects;
 using MakoKaraGenerator.Core.Lyrics;
+using MakoKaraGenerator.Core.Media;
 using MakoKaraGenerator.Core.Persistence;
 using MakoKaraGenerator.Core.Projects;
 using MakoKaraGenerator.Core.Time;
 using MakoKaraGenerator.Media;
 using MakoKaraGenerator.Rendering;
+using MakoKaraGenerator.Rendering.Abstractions;
 using MakoKaraGenerator.Rendering.Skia;
 using MakoKaraGenerator.Runtime.Hosting;
 using MakoKaraGenerator.Scripting;
@@ -138,8 +143,8 @@ foreach (var scenario in selectedScenarios)
         foreach (bool transparent in new[] { false, true })
         {
             string mode = transparent ? "transparent" : "normal";
-            var effect = await Fixture.RenderAsync(factory, project, scenario.TimesUs, transparent);
-            var reference = await Fixture.RenderAsync(factory, baseline, scenario.TimesUs, transparent);
+            var effect = await Fixture.RenderAsync(factory, compiler, videos, options.Backend, project, scenario.TimesUs, transparent);
+            var reference = await Fixture.RenderAsync(factory, compiler, videos, options.Backend, baseline, scenario.TimesUs, transparent);
             long changed = 0;
             for (int index = 0; index < effect.Count; index++)
             {
@@ -247,10 +252,34 @@ internal static class Fixture
         return project;
     }
 
-    internal static async Task<List<RenderedFrame>> RenderAsync(ProjectRenderSessionFactory factory, Project project, long[] times, bool transparent)
+    internal static async Task<List<RenderedFrame>> RenderAsync(
+        ProjectRenderSessionFactory defaultFactory,
+        IScriptCompilationService compiler,
+        IVideoFrameProvider videos,
+        string backend,
+        Project project,
+        long[] times,
+        bool transparent)
     {
         var snapshot = ProjectSnapshot.FromProject(project);
-        var session = await factory.CreateAsync(snapshot);
+        var mediaPlan = ProjectMediaDependencyResolver.Resolve(snapshot.Effects, snapshot.LyricStyle, snapshot.Lyrics,
+            snapshot.LyricPresentation, snapshot.PresetApplications);
+        await using var media = mediaPlan.Dependencies.IsEmpty
+            ? null
+            : await MediaVerifyContext.CreateAsync(snapshot, mediaPlan, transparent);
+        if (media is not null)
+            snapshot = snapshot with { MediaFeatureInput = media.Input };
+
+        var sessionFactory = media is null
+            ? defaultFactory
+            : new ProjectRenderSessionFactory(
+                compiler,
+                videos,
+                ReplayReason.Initial,
+                renderBackend: backend,
+                mediaBinding: media.Binding);
+
+        var session = await sessionFactory.CreateAsync(snapshot);
         List<RenderedFrame> frames = [];
         try
         {
@@ -296,5 +325,239 @@ internal static class Fixture
         using var image = SKImage.FromBitmap(bitmap);
         using var png = image.Encode(SKEncodedImageFormat.Png, 100);
         File.WriteAllBytes(path, png.ToArray());
+    }
+}
+
+internal sealed class MediaVerifyContext : IAsyncDisposable
+{
+    private readonly MediaFeatureSampler _sampler;
+    private readonly IMediaFeatureTrackReader? _reader;
+
+    private MediaVerifyContext(MediaFeatureInput input, MediaFeatureSampler sampler, IMediaFeatureTrackReader? reader)
+    {
+        Input = input;
+        _sampler = sampler;
+        _reader = reader;
+        Binding = new(sampler);
+    }
+
+    internal MediaFeatureInput Input { get; }
+    internal ProjectMediaFeatureBinding Binding { get; }
+
+    internal static async Task<MediaVerifyContext> CreateAsync(ProjectSnapshot snapshot, ProjectMediaDependencyPlan plan, bool transparent)
+    {
+        var writer = new MediaAbIdentityWriter();
+        var comp = snapshot.Composition;
+        var mapping = MediaMapping.Create(
+            comp.CanvasWidth,
+            comp.CanvasHeight,
+            snapshot.Background.Fit,
+            snapshot.Background.Playback,
+            LinearColor(comp.BackgroundColor),
+            transparent ? MediaOutputMode.Transparent : MediaOutputMode.Normal);
+        var budget = new MediaWorkingSetBudget(MediaAbCapacityV1.MaximumRuntimeCpuCacheBytes);
+
+        if (transparent)
+        {
+            var profile = CreateProfileBundle(writer, Digest("verify.media.decoder.v1"), Digest("verify.media.color.v1"));
+            var context = MediaInputContext.Create(profile, mapping, plan.QueryCatalogDigest, plan.FixedDependencyDigest);
+            var noMedia = MediaFeatureInput.CreateNoMedia(context, MediaNoMediaReason.TransparentOutput, Digest("verify.transparent"));
+            return new(noMedia, new MediaFeatureSampler(noMedia, plan, null, budget), null);
+        }
+
+        if (snapshot.Background.Kind == BackgroundKind.Image && File.Exists(snapshot.Background.Path))
+        {
+            byte[] fileBytes = await File.ReadAllBytesAsync(snapshot.Background.Path);
+            var content = new MediaFileContent(
+                new MediaDigest(Convert.ToHexStringLower(SHA256.HashData(fileBytes))),
+                fileBytes.LongLength);
+
+            using var decoded = SKBitmap.Decode(snapshot.Background.Path)
+                ?? throw new InvalidOperationException("无法解码验证背景图像：" + snapshot.Background.Path);
+            using var rgbaBitmap = new SKBitmap(new SKImageInfo(decoded.Width, decoded.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+            if (!decoded.CopyTo(rgbaBitmap, SKColorType.Rgba8888))
+                throw new InvalidOperationException("无法转换验证背景像素格式。");
+
+            float[] linearPixels = ToLinearPremulRgba(rgbaBitmap);
+            var rawColor = new MediaColorInterpretation(
+                MediaTransfer.Srgb,
+                MediaMatrix.Rgb,
+                MediaRange.Full,
+                MediaAlpha.Straight,
+                MediaChromaLocation.None,
+                MediaNativePixelFormat.Rgba32,
+                fromTrustedMissingTagOverride: false,
+                Digest("verify.color.authority"),
+                default);
+            var color = new MediaColorInterpretation(
+                rawColor.Transfer,
+                rawColor.Matrix,
+                rawColor.Range,
+                rawColor.Alpha,
+                rawColor.ChromaLocation,
+                rawColor.NativePixelFormat,
+                rawColor.FromTrustedMissingTagOverride,
+                rawColor.AuthorityDigest,
+                writer.ComputeColorDigest(rawColor));
+
+            var rawTool = new MediaToolIdentity(Digest("verify.exe"), Digest("verify.dep"), Digest("verify.pipe"), default);
+            var tool = new MediaToolIdentity(rawTool.Executables, rawTool.Dependencies, rawTool.NormalizedPipeline, writer.ComputeToolDigest(rawTool));
+
+            var profile = CreateProfileBundle(writer, tool.Digest, color.Digest);
+            var context = MediaInputContext.Create(profile, mapping, plan.QueryCatalogDigest, plan.FixedDependencyDigest);
+
+            var rawDesc = new MediaFilePresentationDescriptor(
+                0,
+                rgbaBitmap.Width,
+                rgbaBitmap.Height,
+                rgbaBitmap.Width,
+                rgbaBitmap.Height,
+                null,
+                1,
+                1,
+                MediaQuarterTurn.None,
+                false,
+                color,
+                default);
+            var desc = new MediaFilePresentationDescriptor(
+                rawDesc.StreamIndex,
+                rawDesc.EncodedWidth,
+                rawDesc.EncodedHeight,
+                rawDesc.CanonicalWidth,
+                rawDesc.CanonicalHeight,
+                rawDesc.StreamTimeBase,
+                rawDesc.SarNumerator,
+                rawDesc.SarDenominator,
+                rawDesc.Rotation,
+                rawDesc.MirrorHorizontallyBeforeRotation,
+                rawDesc.Color,
+                writer.ComputeDescriptorDigest(rawDesc));
+
+            var rawSource = new MediaFeatureFileSource(default, MediaSourceKind.Still, content, desc, tool, profile);
+            var source = new MediaFeatureFileSource(writer.ComputeSourceKey(rawSource), rawSource.Kind, rawSource.Content, rawSource.Presentation, rawSource.Tool, rawSource.Profile);
+
+            byte[] intervalBytes = new byte[MediaTrackLayoutV1.IntervalBytes];
+            BinaryPrimitives.WriteUInt32LittleEndian(intervalBytes.AsSpan(48), (uint)PresentationEndAuthority.Timeless);
+            var indexDigest = new MediaDigest(Convert.ToHexStringLower(SHA256.HashData(intervalBytes)));
+            var summary = new PresentationIndexSummary(source.Key, profile.Digest, desc.Digest, indexDigest, 1, null);
+
+            var codec = new MediaFeatureTrackCodec(new MediaMomentKernel(), new MediaAbValueValidator());
+            var buildBudget = new MediaWorkingSetBudget(MediaAbCapacityV1.MaximumBuilderWorkingBytes);
+            await using var scratch = new InMemoryTrackScratch(8_000_000);
+            await using var builder = codec.CreateBuilder(source, scratch, buildBudget);
+            await builder.OnFrameAsync(new PresentationFrameBorrow(
+                source.Key,
+                profile.Digest,
+                new PresentationFrameObservation(new PresentationFrameId(0), null, rgbaBitmap.Width, rgbaBitmap.Height, color.Digest),
+                linearPixels), CancellationToken.None);
+            await builder.OnIntervalAsync(new PresentationInterval.Timeless(new PresentationFrameId(0)), CancellationToken.None);
+            await using var writeSource = await builder.CompleteAsync(summary, CancellationToken.None);
+            using var trackBuffer = new MemoryStream();
+            var artifact = await codec.WriteCanonicalAsync(writeSource, trackBuffer, buildBudget, CancellationToken.None);
+            byte[] trackBytes = trackBuffer.ToArray();
+            var reader = await codec.OpenValidatedAsync(new MemoryStream(trackBytes, writable: false), source, artifact, budget, CancellationToken.None);
+
+            var available = MediaFeatureInput.CreateAvailableFile(context, source, artifact);
+            return new(available, new MediaFeatureSampler(available, plan, reader, budget), reader);
+        }
+
+        var solidProfile = CreateProfileBundle(writer, Digest("verify.media.decoder.v1"), Digest("verify.media.color.v1"));
+        var solidInput = MediaFeatureInput.CreateAvailableSolid(
+            MediaInputContext.Create(solidProfile, MediaMapping.CreateSolid(comp.CanvasWidth, comp.CanvasHeight), plan.QueryCatalogDigest, plan.FixedDependencyDigest),
+            MediaFeatureSolidSource.Create(solidProfile, LinearColor(comp.BackgroundColor)));
+        return new(solidInput, new MediaFeatureSampler(solidInput, plan, null, budget), null);
+    }
+
+    private static MediaProfileBundle CreateProfileBundle(MediaAbIdentityWriter writer, MediaDigest decoderIdentity, MediaDigest colorInterpretation)
+    {
+        var raw = new MediaProfileBundle(
+            MediaProfilesV1.Presentation,
+            MediaProfilesV1.DecoderPipeline,
+            MediaProfilesV1.Color,
+            MediaProfilesV1.Statistics,
+            MediaProfilesV1.Quantization,
+            MediaProfilesV1.Codec,
+            MediaProfilesV1.Query,
+            MediaProfilesV1.Gpu,
+            decoderIdentity,
+            colorInterpretation,
+            default);
+        return new MediaProfileBundle(
+            raw.Presentation,
+            raw.DecoderPipeline,
+            raw.Color,
+            raw.Statistics,
+            raw.Quantization,
+            raw.Codec,
+            raw.Query,
+            raw.Gpu,
+            raw.DecoderIdentity,
+            raw.ColorInterpretation,
+            writer.ComputeProfileDigest(raw));
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { _sampler.Dispose(); }
+        finally
+        {
+            if (_reader is not null)
+                await _reader.DisposeAsync();
+        }
+    }
+
+    private static float[] ToLinearPremulRgba(SKBitmap bitmap)
+    {
+        int count = bitmap.Width * bitmap.Height;
+        float[] result = new float[count * 4];
+        ReadOnlySpan<byte> bytes = bitmap.GetPixelSpan();
+        for (int i = 0; i < count; i++)
+        {
+            int o = i * 4;
+            double a = bytes[o + 3] / 255.0;
+            float r = (float)Math.Min(a, SrgbToLinear(bytes[o] / 255.0) * a);
+            float g = (float)Math.Min(a, SrgbToLinear(bytes[o + 1] / 255.0) * a);
+            float b = (float)Math.Min(a, SrgbToLinear(bytes[o + 2] / 255.0) * a);
+            result[o] = r <= 0f ? 0f : r;
+            result[o + 1] = g <= 0f ? 0f : g;
+            result[o + 2] = b <= 0f ? 0f : b;
+            result[o + 3] = a <= 0.0 ? 0f : (float)a;
+        }
+        return result;
+    }
+
+    private static LinearPremulRgba LinearColor(RgbaColor color)
+    {
+        double a = color.Alpha / 255.0;
+        double r = Math.Min(a, SrgbToLinear(color.Red / 255.0) * a);
+        double g = Math.Min(a, SrgbToLinear(color.Green / 255.0) * a);
+        double b = Math.Min(a, SrgbToLinear(color.Blue / 255.0) * a);
+        return new(r <= 0 ? 0 : r, g <= 0 ? 0 : g, b <= 0 ? 0 : b, a <= 0 ? 0 : a);
+    }
+
+    private static double SrgbToLinear(double encoded)
+        => encoded <= 0.04045 ? encoded / 12.92 : Math.Pow((encoded + 0.055) / 1.055, 2.4);
+
+    private static MediaDigest Digest(string text)
+        => new(Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text))));
+
+    private sealed class InMemoryTrackScratch(long budget) : IMediaTrackScratchReservation
+    {
+        private readonly List<MemoryStream> _streams = [];
+        public long ReservedByteBudget { get; } = budget;
+
+        public ValueTask<Stream> OpenSectionAsync(MediaTrackSection section, long maximumLength, CancellationToken cancellationToken)
+        {
+            var ms = new MemoryStream();
+            _streams.Add(ms);
+            return new ValueTask<Stream>(ms);
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            foreach (var s in _streams) s.Dispose();
+            _streams.Clear();
+            return ValueTask.CompletedTask;
+        }
     }
 }

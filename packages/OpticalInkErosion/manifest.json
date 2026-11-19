@@ -1,0 +1,330 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.optical-ink-erosion",
+  "name": "光流墨迹与负空间侵蚀",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/OpticalInkErosion.cs",
+      "role": "csharp",
+      "sha256": "232b2215770fb8afa1878fafe353ec47025df7c9058e00c17d221d1920a33185"
+    },
+    {
+      "path": "graphs/optical-ink.graph.json",
+      "role": "graph",
+      "sha256": "5cd8fa32376edd1a783f0adfc8363fa28cb55119210e179523f7130e15df4462"
+    },
+    {
+      "path": "shaders/optical-ink.program.json",
+      "role": "shaderProgram",
+      "sha256": "421fe248641cb3169ed8135372e06208e9ac44e935864e22d6fc7af6d17e5334"
+    },
+    {
+      "path": "shaders/optical-ink.sksl",
+      "role": "shader",
+      "sha256": "c704c42b883d3735b839f7c8629a223c9652b742a162f1d739ad0cf5af33acf1"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "ac72e83a9cd0a94bde4d904cab86fed39a5269e63b906a63622a247b620a80dc"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "backdropSource",
+      "type": "enum",
+      "label": "背景采样来源",
+      "default": "media",
+      "values": [
+        {
+          "value": "media",
+          "label": "底层背景媒体"
+        },
+        {
+          "value": "below",
+          "label": "真实下层合成画面"
+        }
+      ]
+    },
+    {
+      "id": "inkTint",
+      "type": "color",
+      "label": "浓墨主色调",
+      "default": {
+        "r": 0.04,
+        "g": 0.04,
+        "b": 0.06,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "metalTint",
+      "type": "color",
+      "label": "液态金属反光色",
+      "default": {
+        "r": 0.86,
+        "g": 0.9,
+        "b": 0.96,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "invertThreshold",
+      "type": "number",
+      "label": "负空间翻转亮度阈值",
+      "default": 0.44,
+      "min": 0.1,
+      "max": 0.9
+    },
+    {
+      "id": "edgeSensitivity",
+      "type": "number",
+      "label": "前景边缘感应锐度",
+      "default": 1.25,
+      "min": 0.0,
+      "max": 2.5
+    },
+    {
+      "id": "inkTailLengthPx",
+      "type": "number",
+      "label": "风场拉尾最大距离",
+      "default": 135.0,
+      "min": 0.0,
+      "max": 180.0,
+      "unit": "px"
+    },
+    {
+      "id": "burstRadiusPx",
+      "type": "number",
+      "label": "鼓点爆墨放射半径",
+      "default": 92.0,
+      "min": 0.0,
+      "max": 140.0,
+      "unit": "px"
+    },
+    {
+      "id": "climbStrength",
+      "type": "number",
+      "label": "轮廓吸附攀爬强度",
+      "default": 1.15,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "exitWashPx",
+      "type": "number",
+      "label": "退场急流冲刷距离",
+      "default": 165.0,
+      "min": 0.0,
+      "max": 200.0,
+      "unit": "px"
+    },
+    {
+      "id": "enterCutUs",
+      "type": "duration",
+      "label": "入场切入时长",
+      "default": 180000,
+      "min": 0,
+      "max": 1000000,
+      "unit": "us"
+    },
+    {
+      "id": "exitUs",
+      "type": "duration",
+      "label": "句尾冲刷稀释时长",
+      "default": 1800000,
+      "min": 200000,
+      "max": 3000000,
+      "unit": "us"
+    },
+    {
+      "id": "trailIntensity",
+      "type": "number",
+      "label": "晚期长墨丝密度",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "fallbackBpm",
+      "type": "number",
+      "label": "无音频时备用节奏",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 240.0,
+      "unit": "BPM"
+    }
+  ],
+  "mediaQueries": [
+    {
+      "id": "flow",
+      "space": "canvasPixels",
+      "window": {
+        "kind": "literal",
+        "durationUs": 0
+      }
+    }
+  ],
+  "exports": [
+    {
+      "id": "optical-ink-erosion",
+      "kind": "controller",
+      "name": "光流墨迹与负空间侵蚀",
+      "entryType": "OpticalInkErosion",
+      "parameters": [
+        "backdropSource",
+        "inkTint",
+        "metalTint",
+        "invertThreshold",
+        "edgeSensitivity",
+        "inkTailLengthPx",
+        "burstRadiusPx",
+        "climbStrength",
+        "exitWashPx",
+        "enterCutUs",
+        "exitUs",
+        "trailIntensity",
+        "fallbackBpm"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-ink",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": [],
+          "bypass": {
+            "kind": "graphInput",
+            "input": "input:original",
+            "mapping": "identity"
+          }
+        },
+        {
+          "id": "ink-trails",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.trails"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "ink-dots",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.dots"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "transparent-fallback",
+          "kind": "StyleModulation",
+          "target": "tokenFamily",
+          "requires": [],
+          "dependsOn": []
+        },
+        {
+          "id": "transparent-transform",
+          "kind": "VisualTransform",
+          "target": "tokenFamily",
+          "requires": [],
+          "dependsOn": []
+        }
+      ],
+      "mediaQueries": [
+        {
+          "query": "flow",
+          "fallback": {
+            "pending": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-ink",
+                "ink-trails",
+                "ink-dots",
+                "transparent-fallback",
+                "transparent-transform"
+              ]
+            },
+            "unavailable": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-ink",
+                "ink-trails",
+                "ink-dots",
+                "transparent-fallback",
+                "transparent-transform"
+              ]
+            },
+            "noMedia": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-ink",
+                "ink-trails",
+                "ink-dots",
+                "transparent-fallback",
+                "transparent-transform"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "optical-ink-line",
+      "kind": "graph",
+      "name": "光流墨迹（行图）",
+      "graph": "graphs/optical-ink.graph.json",
+      "parameters": [
+        "backdropSource"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": [],
+          "bypass": {
+            "kind": "graphInput",
+            "input": "input:original",
+            "mapping": "identity"
+          }
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "token.opacity",
+    "token.affine",
+    "style.fill",
+    "style.stroke",
+    "style.glow",
+    "image.graph",
+    "line.exit",
+    "media.features",
+    "visuals.trails",
+    "visuals.dots"
+  ],
+  "lineExit": {
+    "durationUs": 1800000
+  },
+  "emitters": []
+}

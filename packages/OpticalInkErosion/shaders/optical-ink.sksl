@@ -1,0 +1,321 @@
+uniform float timeSeconds;
+uniform float2 canvasSize;
+uniform float enterProgress;
+uniform float exitProgress;
+uniform float allSung;
+uniform float sungCutoffX;
+uniform float4 lineBounds;
+uniform float4 windGlobal;
+uniform float4 windLocal[4];
+uniform float4 audioState;
+layout(color) uniform float4 inkTint;
+layout(color) uniform float4 metalTint;
+uniform float invertThreshold;
+uniform float edgeSensitivity;
+uniform float inkTailLengthPx;
+uniform float burstRadiusPx;
+uniform float climbStrength;
+uniform float exitWashPx;
+uniform int slotCount;
+uniform float4 slotRects[8];
+uniform float4 slotStates[8];
+
+uniform shader original;
+uniform shader glyph;
+uniform shader bgSharp;
+uniform shader bgSmooth;
+
+float3 straightRgb(half4 s) {
+    return s.a > 0.0001 ? clamp(float3(s.rgb) / float(s.a), 0.0, 1.0) : float3(0.0);
+}
+
+float luma(float3 rgb) {
+    return dot(rgb, float3(0.2126, 0.7152, 0.0722));
+}
+
+float hash21(float2 p) {
+    float3 p3 = fract(float3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+float vnoise(float2 p) {
+    float2 i = floor(p);
+    float2 f = fract(p);
+    float2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + float2(1.0, 0.0));
+    float c = hash21(i + float2(0.0, 1.0));
+    float d = hash21(i + float2(1.0, 1.0));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(float2 p) {
+    float v = 0.0;
+    float a = 0.52;
+    v += a * vnoise(p); p = p * 2.07 + float2(13.1, 7.7); a *= 0.5;
+    v += a * vnoise(p); p = p * 2.03 + float2(5.4, 19.3); a *= 0.5;
+    v += a * vnoise(p);
+    return v;
+}
+
+float2 safeOffset(float2 delta) {
+    return clamp(delta, float2(-224.0), float2(224.0));
+}
+
+float sampleGlyph(float2 basePos, float2 delta) {
+    return clamp(float(glyph.eval(basePos + safeOffset(delta)).a), 0.0, 1.0);
+}
+
+float sampleBgLuma(float2 pos) {
+    half4 s = bgSharp.eval(pos);
+    if (s.a < 0.02) {
+        return 0.0;
+    }
+    return luma(straightRgb(s));
+}
+
+float4 sampleZoneWind(float x) {
+    float span = max(1.0, lineBounds.z - lineBounds.x);
+    float t = clamp((x - lineBounds.x) / span, 0.0, 1.0) * 3.0;
+    float f = fract(t);
+    if (t < 1.0) return mix(windLocal[0], windLocal[1], f);
+    if (t < 2.0) return mix(windLocal[1], windLocal[2], f);
+    return mix(windLocal[2], windLocal[3], f);
+}
+
+half4 main(float2 p) {
+    half4 origSample = original.eval(p);
+    float origTouch = float(origSample.a) * 0.0;
+
+    // 1. 极高锐度单色剪影遮罩与笔画内芯
+    float covRaw = sampleGlyph(p, float2(0.0));
+    float cov = smoothstep(0.32, 0.60, covRaw);
+
+    float covL = sampleGlyph(p, float2(-1.6, 0.0));
+    float covR = sampleGlyph(p, float2(1.6, 0.0));
+    float covU = sampleGlyph(p, float2(0.0, -1.6));
+    float covD = sampleGlyph(p, float2(0.0, 1.6));
+    float2 gGrad = float2(covL - covR, covU - covD);
+    float gLen = length(gGrad);
+    float2 gNormal = gLen > 0.001 ? gGrad / gLen : float2(0.0, -1.0);
+
+    // 笔画向内侵蚀检测（区分笔画内芯与外骨边）
+    float erR = 2.4;
+    float covMin = min(min(sampleGlyph(p, float2(-erR, 0.0)), sampleGlyph(p, float2(erR, 0.0))),
+                       min(sampleGlyph(p, float2(0.0, -erR)), sampleGlyph(p, float2(0.0, erR))));
+    float innerCore = smoothstep(0.42, 0.78, covMin) * cov;
+    float razorRim = clamp(cov - innerCore * 0.88, 0.0, 1.0);
+
+    // 2. 全分辨率背景高反差与边缘梯度场（用于正负片翻转与轮廓攀爬）
+    half4 bgSharpPx = bgSharp.eval(p);
+    half4 bgSmoothPx = bgSmooth.eval(p);
+    float bgLumaSharp = bgSharpPx.a > 0.02 ? luma(straightRgb(bgSharpPx)) : 0.0;
+    float bgLumaSmooth = bgSmoothPx.a > 0.02 ? luma(straightRgb(bgSmoothPx)) : bgLumaSharp;
+
+    float lL = sampleBgLuma(p + safeOffset(float2(-2.2, 0.0)));
+    float lR = sampleBgLuma(p + safeOffset(float2(2.2, 0.0)));
+    float lU = sampleBgLuma(p + safeOffset(float2(0.0, -2.2)));
+    float lD = sampleBgLuma(p + safeOffset(float2(0.0, 2.2)));
+    float2 bgGrad = float2(lR - lL, lD - lU);
+    float bgGradLen = length(bgGrad);
+    float bgEdge = clamp(bgGradLen * 4.8 * edgeSensitivity, 0.0, 1.0);
+    float2 bgEdgeDir = bgGradLen > 0.004 ? bgGrad / bgGradLen : float2(0.7071, -0.7071);
+    float2 bgTangent = float2(-bgEdgeDir.y, bgEdgeDir.x);
+
+    // 3. 解析当前像素所在音节的激活、已唱与爆墨状态
+    float sungFlag = allSung > 0.5 ? 1.0 : (p.x <= sungCutoffX ? 1.0 : 0.0);
+    float activeEnv = 0.0;
+    float burstEnv = 0.0;
+    float slotSeed = 0.37;
+    float2 bestCenter = p;
+    float2 outFromToken = gNormal;
+    float boxPad = clamp(max(inkTailLengthPx, burstRadiusPx) + 28.0, 32.0, 224.0);
+
+    for (int i = 0; i < 8; i++) {
+        if (i >= slotCount) {
+            break;
+        }
+        float4 r = slotRects[i];
+        float4 st = slotStates[i];
+        float2 c = 0.5 * (r.xy + r.zw);
+        float2 dOut = max(max(r.xy - p, p - r.zw), float2(0.0));
+        float distBox = length(dOut);
+        float inStrict = step(dOut.x + dOut.y, 0.001);
+        float influence = 1.0 - smoothstep(0.0, boxPad, distBox);
+
+        if (inStrict > 0.5) {
+            sungFlag = max(sungFlag, st.y);
+            if (st.y < 0.05 && st.x < 0.05 && allSung < 0.5) {
+                sungFlag = min(sungFlag, st.y);
+            }
+        }
+
+        float actHere = st.x * influence;
+        if (actHere > activeEnv) {
+            activeEnv = actHere;
+            burstEnv = max(burstEnv, st.z * influence);
+            slotSeed = st.w;
+            bestCenter = c;
+            float2 delta = p - c;
+            float dLen = length(delta);
+            outFromToken = dLen > 0.5 ? delta / dLen : gNormal;
+        }
+    }
+
+    // 入场刀刻横向切入（未轮到切入的部分直接裁掉）
+    float cutEdge = mix(lineBounds.x - 45.0, lineBounds.z + 45.0, clamp(enterProgress, 0.0, 1.0));
+    float diagonalShift = (p.y - lineBounds.y) * 0.25;
+    float enterMask = enterProgress >= 0.999 ? 1.0 : (1.0 - smoothstep(cutEdge - 10.0, cutEdge + 2.0, p.x - diagonalShift));
+
+    // 4. 负空间正负片实时翻转与高反差切割
+    float localContrast = mix(bgLumaSharp, bgLumaSmooth, 0.25);
+    float brightBg = smoothstep(invertThreshold - 0.05, invertThreshold + 0.05, localContrast);
+
+    // 暗底 -> 锐利象牙白；亮底 -> 浓墨主色（极亮区域中心呈负空间镂空）
+    float3 darkInkColor = inkTint.rgb;
+    float3 brightCutColor = clamp(metalTint.rgb * 0.35 + float3(0.65), 0.0, 1.0);
+    float3 baseInvertedRgb = mix(brightCutColor, darkInkColor, brightBg);
+
+    // 亮底下的内部负空间侵蚀镂空：保留锐利黑外轮廓，内部越亮越镂空
+    float hollowMask = brightBg * innerCore * smoothstep(invertThreshold + 0.06, 0.88, bgLumaSharp) * (1.0 - activeEnv * 0.72);
+    float contourSlice = smoothstep(0.28, 0.72, bgEdge);
+    float3 sliceInvertRgb = mix(baseInvertedRgb, 1.0 - baseInvertedRgb, contourSlice * 0.85);
+    float silhouetteAlpha = clamp((cov - hollowMask * 0.82) * enterMask, 0.0, 1.0);
+    silhouetteAlpha = max(silhouetteAlpha, razorRim * cov * enterMask);
+
+    // 5. 提取本像素位置的光流风场（全局 + 局部水平分区）
+    float4 zoneWind = sampleZoneWind(p.x);
+    float2 flowVec = windGlobal.xy + zoneWind.xy;
+    float flowSpeed = length(flowVec);
+    float motionActivity = clamp(max(windGlobal.w, zoneWind.w), 0.0, 1.0);
+    float2 windDir = flowSpeed > 0.15 ? flowVec / flowSpeed : normalize(float2(bgEdgeDir.y, -bgEdgeDir.x) + float2(0.001, 0.0));
+
+    // 6. 走字激活态：表层未干浓墨/液态金属 + 光流风力拉尾 + 静止鼓点炸开
+    float wetWave1 = fbm(p * 0.048 + float2(timeSeconds * 1.4, -timeSeconds * 0.9));
+    float wetWave2 = fbm(p * 0.11 - float2(timeSeconds * 2.1, timeSeconds * 1.6) + wetWave1 * 1.8);
+    float2 inkPerturb = float2(wetWave1 - 0.5, wetWave2 - 0.5) * 2.0;
+    float2 liquidNormal = normalize(gNormal * 0.65 + inkPerturb * 0.85 + float2(0.0, 0.001));
+    float specBand = pow(clamp(dot(liquidNormal, normalize(float2(-0.55, -0.83))), 0.0, 1.0), 4.0);
+    float wetGloss = pow(clamp(wetWave2, 0.0, 1.0), 2.0) * 0.72;
+    float3 liquidInkRgb = mix(darkInkColor * 0.82, metalTint.rgb, clamp(specBand * 1.05 + wetGloss * 0.52, 0.0, 1.0));
+
+    // 6A. 风场驱动长尾平流（18步随机抖动采样消除叠影阶梯，形成连续飞白墨丝与烟雾）
+    float tailGate = clamp(max(activeEnv, sungFlag * 0.35 * (1.0 - exitProgress)), 0.0, 1.0) * clamp(flowSpeed / 2.2, 0.0, 1.0);
+    float tailReach = clamp(inkTailLengthPx * tailGate, 0.0, 210.0);
+    float windTailInk = 0.0;
+    float windSmoke = 0.0;
+
+    if (tailReach > 1.5) {
+        float2 perp = float2(-windDir.y, windDir.x);
+        float alongCoord = dot(p, windDir);
+        float crossCoord = dot(p, perp);
+        float streakNoise = fbm(float2(alongCoord * 0.014 - timeSeconds * 3.0, crossCoord * 0.14 + slotSeed * 17.0));
+        float dryBrush = smoothstep(0.28, 0.72, streakNoise);
+        float pixelJitter = (hash21(p * 0.73 + float2(slotSeed * 31.0, timeSeconds * 9.0)) - 0.5) / 18.0;
+
+        for (int s = 1; s <= 18; s++) {
+            float frac = clamp(float(s) / 18.0 + pixelJitter, 0.02, 1.0);
+            float dist = tailReach * (frac * frac * 0.55 + frac * 0.45);
+            float spreadWidth = 2.0 + 15.0 * frac;
+            float wiggle = (fbm(float2(alongCoord * 0.028 - frac * 2.8, crossCoord * 0.055)) - 0.5) * spreadWidth;
+            float gTap = sampleGlyph(p, -windDir * dist + perp * wiggle);
+            float w = (1.0 - frac * 0.88) * dryBrush;
+            windTailInk = max(windTailInk, gTap * w);
+            windSmoke += gTap * (1.0 - frac) * 0.11;
+        }
+    }
+
+    // 6B. 背景静止 + 音频鼓点瞬态放射炸开
+    float audioPulse = audioState.y;
+    float audioDecay = audioState.z;
+    float stillWeight = 1.0 - smoothstep(0.10, 0.45, motionActivity);
+    float radialTrigger = clamp(max(audioDecay, burstEnv * 0.85) * (0.35 + 0.65 * stillWeight) * clamp(activeEnv + burstEnv * 0.7, 0.0, 1.0), 0.0, 1.2);
+    float radialReach = clamp(burstRadiusPx * radialTrigger, 0.0, 210.0);
+    float burstInk = 0.0;
+
+    if (radialReach > 1.5) {
+        float2 rDir = normalize(outFromToken + inkPerturb * 0.35 + float2(0.001, 0.0));
+        float ang = atan(rDir.y, rDir.x);
+        float spikeNoise = fbm(float2(ang * 3.8 + slotSeed * 12.0, length(p - bestCenter) * 0.035));
+        float spikeGate = smoothstep(0.28, 0.72, spikeNoise);
+
+        for (int s = 1; s <= 8; s++) {
+            float frac = float(s) / 8.0;
+            float dist = radialReach * frac;
+            float gTap = sampleGlyph(p, -rDir * dist);
+            float drop = (1.0 - frac * 0.82) * (0.4 + 0.6 * spikeGate);
+            burstInk = max(burstInk, gTap * drop);
+        }
+    }
+
+    // 6C. 背景轮廓边缘吸附与切向攀爬（仅在液态墨迹激活、爆墨或冲刷期间吸附，保持待唱剪影刀刻锐利）
+    float spreadField = clamp(max(windTailInk, burstInk) + windSmoke * 0.45, 0.0, 1.0);
+    float liquidAvailability = clamp(activeEnv * 0.90 + burstEnv * 0.95 + spreadField * 1.45 + exitProgress * (1.0 - exitProgress) * 0.85, 0.0, 1.0);
+    float climbedInk = 0.0;
+    if (climbStrength > 0.01 && liquidAvailability > 0.04 && bgEdge > 0.12) {
+        float cTap1 = sampleGlyph(p, bgTangent * 12.0);
+        float cTap2 = sampleGlyph(p, -bgTangent * 12.0);
+        float cTap3 = sampleGlyph(p, bgTangent * 24.0 + bgEdgeDir * 4.0);
+        float cTap4 = sampleGlyph(p, -bgTangent * 24.0 - bgEdgeDir * 4.0);
+        float nearContourSource = max(spreadField, max(max(cTap1, cTap2), max(cTap3, cTap4)) * 0.82);
+        float capillaryNoise = smoothstep(0.22, 0.66, fbm(p * 0.12 + bgTangent * 4.0));
+        climbedInk = clamp(nearContourSource * bgEdge * climbStrength * liquidAvailability * (0.70 + 0.55 * capillaryNoise), 0.0, 1.0);
+    }
+
+    // 7. 已唱与退场态：彻底解除骨架约束，交给运动场冲刷、拉丝、稀释
+    float exitAmt = smoothstep(0.0, 1.0, clamp(exitProgress, 0.0, 1.0));
+    float3 finalRgb = mix(sliceInvertRgb, liquidInkRgb, clamp(activeEnv * 0.92 + climbedInk * 0.65, 0.0, 1.0));
+    float coreBodyAlpha = silhouetteAlpha;
+
+    // 激活态下剥离的墨丝与爆墨权重
+    float activeSplashAlpha = clamp(max(max(windTailInk, burstInk), climbedInk) + windSmoke * 0.35, 0.0, 1.0);
+    float3 splashRgb = mix(darkInkColor, metalTint.rgb, clamp(wetGloss * 0.72 + contourSlice * 0.35, 0.0, 1.0));
+
+    float combinedAlpha = max(coreBodyAlpha, activeSplashAlpha * enterMask);
+    float3 combinedRgb = mix(splashRgb, finalRgb, clamp(coreBodyAlpha / max(combinedAlpha, 0.001), 0.0, 1.0));
+
+    if (exitAmt > 0.001) {
+        // 静止画面下自动借用背景梯度切向与微涡流作为急流冲刷方向
+        float2 fallbackStream = normalize(bgTangent * 0.85 + float2(0.75, -0.35) + float2(0.001, 0.0));
+        float2 washDir = flowSpeed > 0.8 ? windDir : normalize(mix(fallbackStream, windDir, clamp(flowSpeed / 0.8, 0.0, 1.0)));
+        float2 washPerp = float2(-washDir.y, washDir.x);
+
+        float washDist = clamp(exitWashPx * (0.28 + 0.90 * pow(exitAmt, 0.85)), 0.0, 220.0);
+        float curlPhase = fbm(p * 0.025 + washDir * (timeSeconds * 1.8));
+        float skeletonRelease = 1.0 - smoothstep(0.0, 0.25, exitAmt);
+
+        float washedInk = 0.0;
+        float alongW = dot(p, washDir);
+        float crossW = dot(p, washPerp);
+        float filamentMask = smoothstep(0.20 + 0.54 * exitAmt, 0.86,
+            fbm(float2(alongW * 0.012 - exitAmt * 3.8, crossW * 0.11 + curlPhase * 2.5)));
+        float washJitter = (hash21(p * 0.61 + float2(exitAmt * 19.0, 3.7)) - 0.5) / 14.0;
+
+        for (int s = 0; s < 14; s++) {
+            float frac = clamp(float(s) / 13.0 + washJitter, 0.0, 1.0);
+            float d = washDist * (frac * 0.92 + 0.08 * exitAmt);
+            float lateral = (curlPhase - 0.5) * (10.0 + 34.0 * exitAmt) * frac;
+            float tap = sampleGlyph(p, -washDir * d + washPerp * lateral);
+            float fadeAlong = (1.0 - frac * 0.78);
+            washedInk = max(washedInk, tap * fadeAlong);
+        }
+
+        // 伴随浓墨溶解，被冲刷区域在后期逐渐从浓墨稀释至淡烟直至归零
+        float dilutionFade = 1.0 - smoothstep(0.32, 0.98, exitAmt);
+        float dissolvedAlpha = clamp(max(coreBodyAlpha * skeletonRelease, washedInk * (0.38 + 0.62 * filamentMask)) * dilutionFade, 0.0, 1.0);
+        float3 washedColor = mix(liquidInkRgb, mix(darkInkColor, bgSmoothPx.rgb, 0.25 * exitAmt), clamp(exitAmt * 0.75, 0.0, 1.0));
+
+        combinedAlpha = dissolvedAlpha * enterMask;
+        combinedRgb = mix(combinedRgb, washedColor, smoothstep(0.05, 0.45, exitAmt));
+    }
+
+    // 在高反差交界处追加一丝液态金属刀刻高亮刃边
+    float metalEdgeGlow = contourSlice * razorRim * (0.45 + 0.55 * activeEnv) * (1.0 - exitAmt);
+    combinedRgb = clamp(combinedRgb + metalTint.rgb * (metalEdgeGlow * 0.40) + float3(origTouch), 0.0, 1.0);
+
+    float outAlpha = clamp(combinedAlpha, 0.0, 1.0);
+    float3 premul = clamp(combinedRgb * outAlpha, float3(0.0), float3(outAlpha));
+    half4 res = half4(premul, outAlpha);
+    return half4(min(res.rgb, half3(res.a)), res.a);
+}
