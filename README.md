@@ -2,7 +2,7 @@
 
 MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `packageVersion: 3`）。
 
-仓库采用**展开目录形式**存储各效果包源码与资源（不直接提交 `.mkfx` 归档），并提供 SDK v2 API 对照文档、清单摘要校验/本地打包脚本，以及直接对接 `MakoKaraGenerator-App` 后端的 Vulkan GPU 真机渲染验证工具。
+仓库同时提供各效果包的**展开目录源码与资源**（`packages/`）以及对应的**预打包 `.mkfx` 归档**（`dist/`），并提供 SDK v2 API 对照文档、清单摘要校验/本地打包脚本，以及直接对接 `MakoKaraGenerator-App` 后端的 Vulkan GPU 真机渲染验证工具。
 
 ---
 
@@ -10,7 +10,8 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 
 ```text
 .
-├── packages/              # 8 个展开后的 SDK v2 示例效果包目录
+├── dist/                  # 10 个已打包的 .mkfx 效果包归档（可直接导入应用）
+├── packages/              # 10 个展开后的 SDK v2 示例效果包目录
 ├── docs/                  # SDK v2 API 完整参考与示例对照文档
 │   ├── script-sdk-v2.md
 │   └── api-sample-mapping.md
@@ -23,7 +24,7 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 
 ---
 
-## 示例效果包索引（`packages/`）
+## 示例效果包索引（`packages/` / `dist/`）
 
 | 目录 | `packageId` | 类型 | 核心特性 |
 | --- | --- | --- | --- |
@@ -32,8 +33,10 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 | [`packages/HoloPrismGlow`](packages/HoloPrismGlow) | `makokara.sample.holo-prism-glow` | 图效果 (`graph`) | 整行 `SungCoverage` 遮罩提取、Bloom、RGB 棱镜色散与全息流光 |
 | [`packages/LiquidGlassMaterial`](packages/LiquidGlassMaterial) | `makokara.sample.liquid-glass` | 材质 (`material`) | 折射模糊、轮廓梯度 Fresnel 边缘、色散、流光与透明渐变兜底 |
 | [`packages/PetalFall`](packages/PetalFall) | `makokara.sample.petal-fall` | 控制器 (`controller`) | 行周 3D 翻转樱花雨 + `TokenStarted` 逐字惊落爆发粒子 |
+| [`packages/RubySplitEmphasis`](packages/RubySplitEmphasis) | `makokara.sample.ruby-split-emphasis` | 控制器 (`controller`) | 主字（`BaseOnly`）与注音单字簇（`TextClusterTarget`）分离缩放，支持 `SourceRubySegment` 定时与未分段宽度切片兜底 |
 | [`packages/StarTrail`](packages/StarTrail) | `makokara.sample.star-trail` | 控制器 (`controller`) | 播放头双层旋转 SVG 主星、连续粒子、彗星拖尾与跨行飞行衔接 |
 | [`packages/UtopiaEmphasis`](packages/UtopiaEmphasis) | `makokara.sample.utopia-emphasis` | 控制器 (`controller`) | 仿 Utopia 逐字爆发缩放、可配置衰减曲线与闪耀辉光 |
+| [`packages/WordScatterExit`](packages/WordScatterExit) | `makokara.sample.word-scatter-exit` | 控制器 + 图 (`controller` + `graph`) | 逐字唱完旋转散落淡出、注音字簇飘散、`line.exit` 句尾续播与逐字高斯模糊（`BindGraph`） |
 | [`packages/WordSwellEmphasis`](packages/WordSwellEmphasis) | `makokara.sample.word-swell-emphasis` | 控制器 (`controller`) | 逐字平滑膨胀、上浮与唱完回落，支持连字安全判断 |
 
 ---
@@ -54,7 +57,7 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 ```bash
 python3 tools/pack.py --check                   # 仅校验全部包的合同字段、文件闭包与 SHA-256 摘要
 python3 tools/pack.py --refresh                 # 修改源码或资源后，仅更新 manifest.json 的 SHA-256
-python3 tools/pack.py                           # 更新摘要并导出全部 .mkfx 到本地 dist/（已 gitignore）
+python3 tools/pack.py                           # 更新摘要并导出全部 .mkfx 到 dist/
 python3 tools/pack.py UtopiaEmphasis            # 仅打包指定效果包
 ```
 

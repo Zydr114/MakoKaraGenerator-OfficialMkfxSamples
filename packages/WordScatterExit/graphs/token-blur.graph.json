@@ -1,0 +1,63 @@
+{
+  "graphVersion": 1,
+  "id": "token-blur",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    }
+  ],
+  "parameters": [
+    "blurSigmaPx"
+  ],
+  "nodes": [
+    {
+      "id": "blur",
+      "op": "Blur",
+      "input": "input:original",
+      "sigmaPx": "parameter:blurSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:blurSigmaPx)",
+        "maxExpandPx": 72,
+        "maxSampleOffsetPx": 72
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "fit",
+      "op": "Transform",
+      "input": "node:blur",
+      "matrix": [1, 0, 0, 1, 0, 0],
+      "outputBounds": [0, 0, 1, 1],
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:fit",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 72
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

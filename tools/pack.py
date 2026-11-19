@@ -3,7 +3,7 @@
 
 只用 Python 标准库。归档布局与 MakoKaraGenerator 后端 EffectPackageTransfer.WriteArchiveAsync 一致：
 先写 manifest.json，再按 ordinal 路径顺序写声明文件；固定 2000-01-01 00:00:00 时间戳、Deflate、
-外部属性为 0，不写目录条目。仓库仅以展开目录存储，导出归档默认写入 dist/ 目录。
+外部属性为 0，不写目录条目。导出归档默认写入 dist/ 目录。
 """
 from __future__ import annotations
 

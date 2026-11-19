@@ -1,7 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using MakoKaraGenerator.Core.Effects;
+using MakoKaraGenerator.Core.Lyrics;
 using MakoKaraGenerator.Core.Projects;
+using MakoKaraGenerator.Core.Time;
 
 /// <summary>一个包的一种验证场景：如何将包挂入基准工程、是否在基准工程附带音频分析、以及在哪些歌曲时刻采样。</summary>
 internal sealed record Scenario(
@@ -16,6 +18,9 @@ internal static class Scenarios
     // 基准工程第 0 行 2.0~5.0s，第 1 行 5.0~8.0s，每字 0.5s；采样点覆盖起唱瞬间、字中段、行尾、跨行衔接与后续行。
     private static readonly long[] DefaultTimes = [2_100_000, 3_250_000, 4_900_000, 6_400_000];
     private static readonly long[] TrailTimes = [2_100_000, 3_250_000, 4_900_000, 5_050_000, 6_400_000];
+    private static readonly long[] ExitTimes = [2_750_000, 3_250_000, 4_900_000, 5_200_000, 6_400_000];
+    private static readonly long[] RubySwellTimes = [2_180_000, 2_400_000, 3_120_000, 3_320_000, 3_450_000];
+    private static readonly long[] RubyBurstTimes = [2_060_000, 2_310_000, 3_060_000, 3_250_000];
 
     internal static IReadOnlyList<Scenario> All { get; } =
     [
@@ -70,6 +75,24 @@ internal static class Scenarios
         new("HoloPrismGlow", "default",
             (project, package) => WithInstance(project, package, "holo-prism-glow"),
             DefaultTimes),
+
+        new("WordScatterExit", "default",
+            (project, package) => WithInstance(project, package, "word-scatter-exit"),
+            ExitTimes),
+        new("WordScatterExit", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "word-scatter-exit"),
+            ExitTimes),
+
+        new("RubySplitEmphasis", "default",
+            (project, package) => WithInstance(project, package, "ruby-split-emphasis"),
+            DefaultTimes),
+        new("RubySplitEmphasis", "ruby-swell",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "ruby-split-emphasis"),
+            RubySwellTimes),
+        new("RubySplitEmphasis", "ruby-burst",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "ruby-split-emphasis",
+                """{"emphasisMode":"burst","basePeakScale":1.42,"rubyPeakScale":1.65,"returnUs":180000}"""),
+            RubyBurstTimes),
     ];
 
     internal static ProjectAudioAnalysis CreateSyntheticAudioAnalysis(long durationUs)
@@ -124,5 +147,49 @@ internal static class Scenarios
         if (sung) style = style with { SungFill = new() { Material = material } };
         if (stroke) style = style with { Stroke = new() { Material = material, WidthPx = 6 } };
         return project with { LyricStyle = style, Effects = new([package]) };
+    }
+
+    private static Project WithSampleRuby(Project project)
+    {
+        var branch = project.Lyrics.Branches[0];
+        var line0 = branch.Lines[0];
+        // "朝の光浴びて":
+        // r0t0="朝"(2.0~2.5s) -> 分段 Ruby "あ"(2.0~2.25s) + "さ"(2.25~2.5s)
+        // r0t2="光"(3.0~3.5s) -> 未分段 Ruby "ひかり"(Missing，测试兜底按字簇宽度切片)
+        // r0t3="浴"(3.5~4.0s) -> 单段 Ruby "あ"(3.5~4.0s)
+        var ruby0 = new RubyAnnotation
+        {
+            Id = "ruby-r0t0",
+            BaseTokenId = "r0t0",
+            Text = "あさ",
+            Segments =
+            [
+                RubyTextSegment.Create("ruby-r0t0-seg-1", "あ", new TimeRange(2_000_000, 2_250_000), TimingStatus.Edited),
+                RubyTextSegment.Create("ruby-r0t0-seg-2", "さ", new TimeRange(2_250_000, 2_500_000), TimingStatus.Edited),
+            ],
+            Language = "ja",
+            RelativeScale = 0.5,
+            GapPx = 2,
+            Alignment = RubyAlignment.Center,
+        };
+        var ruby2 = RubyAnnotation.Create("ruby-r0t2", "r0t2", "ひかり", language: "ja");
+        var ruby3 = new RubyAnnotation
+        {
+            Id = "ruby-r0t3",
+            BaseTokenId = "r0t3",
+            Text = "あ",
+            Segments =
+            [
+                RubyTextSegment.Create("ruby-r0t3-seg-1", "あ", new TimeRange(3_500_000, 4_000_000), TimingStatus.Edited),
+            ],
+            Language = "ja",
+            RelativeScale = 0.5,
+            GapPx = 2,
+            Alignment = RubyAlignment.Center,
+        };
+        var updatedLine0 = line0 with { RubyAnnotations = [ruby0, ruby2, ruby3] };
+        var updatedBranch = branch with { Lines = branch.Lines.SetItem(0, updatedLine0) };
+        var updatedLyrics = project.Lyrics with { Branches = project.Lyrics.Branches.SetItem(0, updatedBranch) };
+        return project with { Lyrics = updatedLyrics };
     }
 }

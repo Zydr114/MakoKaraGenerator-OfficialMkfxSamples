@@ -1,0 +1,267 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.word-scatter-exit",
+  "name": "逐字散落退出",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/WordScatterExit.cs",
+      "role": "csharp",
+      "sha256": "3e55226c332f2acee7c58dce6cbdb34f18829fc67f205c8fd99d00b15bbcd85f"
+    },
+    {
+      "path": "graphs/token-blur.graph.json",
+      "role": "graph",
+      "sha256": "d9bf4f6fd9b090fd81abee6f45612b0d3a5961a2e74bd6a978ea73bc2c3f02d4"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "4cb58908abd247bd8274c7f5c448b98bec303dfd97c2cf77042aefb9fd0f5caf"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 650000,
+      "id": "exitUs",
+      "label": "单字退出时长",
+      "max": 1500000,
+      "min": 50000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 58,
+      "id": "fallPx",
+      "label": "下落距离",
+      "max": 240,
+      "min": -160,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": -22,
+      "id": "driftPx",
+      "label": "水平漂移",
+      "max": 160,
+      "min": -160,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": -26,
+      "id": "spinDegrees",
+      "label": "主字旋转角度",
+      "max": 180,
+      "min": -180,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": 0.56,
+      "id": "endScale",
+      "label": "退出终点缩放",
+      "max": 1.5,
+      "min": 0.1,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": 5.5,
+      "id": "maxBlurSigmaPx",
+      "label": "最大高斯模糊半径",
+      "max": 24,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0,
+      "id": "blurSigmaPx",
+      "label": "图节点模糊半径",
+      "max": 24,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 20,
+      "id": "rubyScatterPx",
+      "label": "注音散开幅度",
+      "max": 80,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 30,
+      "id": "rubySpinDegrees",
+      "label": "注音倾转幅度",
+      "max": 180,
+      "min": 0,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": {
+        "easing": "easeOut",
+        "kind": "easing"
+      },
+      "id": "exitCurve",
+      "label": "运动与模糊曲线",
+      "type": "curve"
+    },
+    {
+      "default": {
+        "first": [
+          0.45,
+          0
+        ],
+        "kind": "cubicBezier",
+        "second": [
+          0.9,
+          1
+        ]
+      },
+      "id": "opacityCurve",
+      "label": "淡出曲线",
+      "type": "curve"
+    },
+    {
+      "default": true,
+      "id": "exitGlow",
+      "label": "退出余晖辉光",
+      "type": "boolean"
+    },
+    {
+      "default": {
+        "a": 1,
+        "b": 0.18,
+        "g": 0.72,
+        "r": 1
+      },
+      "id": "glowColor",
+      "label": "余晖颜色",
+      "type": "color"
+    },
+    {
+      "default": 14,
+      "id": "glowBlurPx",
+      "label": "余晖模糊半径",
+      "max": 48,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.85,
+      "id": "glowOpacity",
+      "label": "余晖不透明度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "WordScatterExit",
+      "id": "word-scatter-exit",
+      "kind": "controller",
+      "name": "逐字散落退出",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "base-transform",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "baseToken"
+        },
+        {
+          "dependsOn": [],
+          "id": "ruby-cluster",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "cluster"
+        },
+        {
+          "dependsOn": [],
+          "id": "fade-glow",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "exit-blur",
+          "kind": "ImageGraph",
+          "requires": [],
+          "target": "tokenFamily"
+        }
+      ],
+      "parameters": [
+        "exitUs",
+        "fallPx",
+        "driftPx",
+        "spinDegrees",
+        "endScale",
+        "maxBlurSigmaPx",
+        "rubyScatterPx",
+        "rubySpinDegrees",
+        "exitCurve",
+        "opacityCurve",
+        "exitGlow",
+        "glowColor",
+        "glowBlurPx",
+        "glowOpacity"
+      ]
+    },
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "graph": "graphs/token-blur.graph.json",
+      "id": "token-blur",
+      "kind": "graph",
+      "name": "字族高斯模糊",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "blur",
+          "kind": "ImageGraph",
+          "requires": [],
+          "target": "tokenFamily"
+        }
+      ],
+      "parameters": [
+        "blurSigmaPx"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "cluster.affine",
+    "token.opacity",
+    "style.glow",
+    "image.graph",
+    "line.exit"
+  ],
+  "lineExit": {
+    "durationUs": 1500000
+  },
+  "emitters": []
+}

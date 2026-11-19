@@ -1,0 +1,236 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.ruby-split-emphasis",
+  "name": "主字注音分离强调",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/RubySplitEmphasis.cs",
+      "role": "csharp",
+      "sha256": "f87cf8afa93d00c60dd319cc599ff16bd7c4b5930c4e53081dd684d505952bfb"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "14164b74d02963bbeb6e2cbe0201b4e6f173c803517df66dc0450313789526b1"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 1.35,
+      "id": "basePeakScale",
+      "label": "主字峰值放大比例",
+      "max": 4,
+      "min": 1,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": 1.5,
+      "id": "rubyPeakScale",
+      "label": "注音单簇峰值比例",
+      "max": 4,
+      "min": 1,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": "swell",
+      "id": "emphasisMode",
+      "label": "强调动画模式",
+      "type": "enum",
+      "values": [
+        {
+          "label": "随唱渐涨回落",
+          "value": "swell"
+        },
+        {
+          "label": "起唱突放衰减",
+          "value": "burst"
+        }
+      ]
+    },
+    {
+      "default": 50000,
+      "id": "attackUs",
+      "label": "突放起跳时长",
+      "max": 300000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 180000,
+      "id": "returnUs",
+      "label": "回落复原时长",
+      "max": 2000000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": {
+        "easing": "easeInOut",
+        "kind": "easing"
+      },
+      "id": "growCurve",
+      "label": "渐涨曲线",
+      "type": "curve"
+    },
+    {
+      "default": {
+        "easing": "easeOut",
+        "kind": "easing"
+      },
+      "id": "returnCurve",
+      "label": "回落曲线",
+      "type": "curve"
+    },
+    {
+      "default": "center",
+      "id": "baseAnchor",
+      "label": "主字缩放支点",
+      "type": "enum",
+      "values": [
+        {
+          "label": "字框中心",
+          "value": "center"
+        },
+        {
+          "label": "基线中心",
+          "value": "baseline"
+        },
+        {
+          "label": "字框底部",
+          "value": "bottom"
+        }
+      ]
+    },
+    {
+      "default": "center",
+      "id": "rubyAnchor",
+      "label": "注音缩放支点",
+      "type": "enum",
+      "values": [
+        {
+          "label": "字框中心",
+          "value": "center"
+        },
+        {
+          "label": "基线中心",
+          "value": "baseline"
+        },
+        {
+          "label": "字框底部",
+          "value": "bottom"
+        }
+      ]
+    },
+    {
+      "default": true,
+      "id": "rubyFallbackSlice",
+      "label": "未分段注音按字簇切片兜底",
+      "type": "boolean"
+    },
+    {
+      "default": true,
+      "id": "flashGlow",
+      "label": "主字瞬时辉光",
+      "type": "boolean"
+    },
+    {
+      "default": {
+        "a": 1,
+        "b": 0.78,
+        "g": 0.95,
+        "r": 1
+      },
+      "id": "glowColor",
+      "label": "主字辉光颜色",
+      "type": "color"
+    },
+    {
+      "default": 10,
+      "id": "glowBlurPx",
+      "label": "辉光模糊半径",
+      "max": 48,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 0.7,
+      "id": "glowOpacity",
+      "label": "辉光峰值不透明度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "RubySplitEmphasis",
+      "id": "ruby-split-emphasis",
+      "kind": "controller",
+      "name": "主字注音分离强调",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "base-scale",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "baseToken"
+        },
+        {
+          "dependsOn": [],
+          "id": "ruby-scale",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "cluster"
+        },
+        {
+          "dependsOn": [],
+          "id": "base-glow",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "baseToken"
+        }
+      ],
+      "parameters": [
+        "basePeakScale",
+        "rubyPeakScale",
+        "emphasisMode",
+        "attackUs",
+        "returnUs",
+        "growCurve",
+        "returnCurve",
+        "baseAnchor",
+        "rubyAnchor",
+        "rubyFallbackSlice",
+        "flashGlow",
+        "glowColor",
+        "glowBlurPx",
+        "glowOpacity"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "cluster.affine",
+    "style.glow"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}
