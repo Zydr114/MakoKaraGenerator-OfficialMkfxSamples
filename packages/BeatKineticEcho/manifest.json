@@ -1,0 +1,206 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.beat-kinetic-echo",
+  "name": "节拍动感残影与放射叠印",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/BeatKineticEcho.cs",
+      "role": "csharp",
+      "sha256": "58b855a1958d4f7a1e71997d438da05975d25f457f08759fc3fb502d3c4ecd63"
+    },
+    {
+      "path": "graphs/kinetic-echo.graph.json",
+      "role": "graph",
+      "sha256": "7b2845b0bdf555d540f975aa9cd19896dc92055d83fd5d74993c4eeb4dba9e58"
+    },
+    {
+      "path": "shaders/echo-gate.program.json",
+      "role": "shaderProgram",
+      "sha256": "a827bd91a307385d3f8acddc85b2381d29e027ee2b71403acb2ec8df17327e3f"
+    },
+    {
+      "path": "shaders/echo-gate.sksl",
+      "role": "shader",
+      "sha256": "46e0b631529a8a6e664a357e5ee2afef92b2492603c01475e00d511e88d903e5"
+    },
+    {
+      "path": "shaders/echo-tint.program.json",
+      "role": "shaderProgram",
+      "sha256": "8e19b5854dcf641635890dda6289b2819834b1ab5faae394b967655e5b153b96"
+    },
+    {
+      "path": "shaders/echo-tint.sksl",
+      "role": "shader",
+      "sha256": "90f722036c16270851515317a10ca480c676bf552d74f48a61c377d09cd73097"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "a1317c2f636ae47e7b6435c53db92a26dddc420d2983d5f155b916d918bcc993"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "echoMode",
+      "type": "enum",
+      "label": "残影变换模式",
+      "default": "radialZoom",
+      "values": [
+        {
+          "value": "radialZoom",
+          "label": "放射外扩（Radial Zoom）"
+        },
+        {
+          "value": "horizontalShear",
+          "label": "水平斜切（Horizontal Shear）"
+        },
+        {
+          "value": "orbitalSplit",
+          "label": "轨道环绕（Orbital Split）"
+        }
+      ]
+    },
+    {
+      "id": "sungOnly",
+      "type": "boolean",
+      "label": "仅已唱区域触发残影",
+      "default": false
+    },
+    {
+      "id": "maxSpreadPx",
+      "type": "number",
+      "label": "残影最大偏移半径",
+      "default": 36.0,
+      "min": 0.0,
+      "max": 120.0,
+      "unit": "px"
+    },
+    {
+      "id": "maxScaleBoost",
+      "type": "number",
+      "label": "放射最大缩放增量",
+      "default": 0.24,
+      "min": 0.0,
+      "max": 0.45
+    },
+    {
+      "id": "echoOpacity",
+      "type": "number",
+      "label": "残影基础不透明度",
+      "default": 0.72,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "tintA",
+      "type": "color",
+      "label": "主残影色调",
+      "default": {
+        "r": 0.16,
+        "g": 0.88,
+        "b": 1.0,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "tintB",
+      "type": "color",
+      "label": "外层残影色调",
+      "default": {
+        "r": 1.0,
+        "g": 0.24,
+        "b": 0.72,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "blurSigmaPx",
+      "type": "number",
+      "label": "残影柔焦半径",
+      "default": 4.0,
+      "min": 0.0,
+      "max": 16.0,
+      "unit": "px"
+    },
+    {
+      "id": "fallbackBpm",
+      "type": "number",
+      "label": "无音频时备用BPM",
+      "default": 124.0,
+      "min": 0.0,
+      "max": 240.0,
+      "unit": "BPM"
+    }
+  ],
+  "exports": [
+    {
+      "id": "beat-kinetic-echo",
+      "kind": "controller",
+      "name": "节拍动感残影与放射叠印",
+      "entryType": "BeatKineticEcho",
+      "parameters": [
+        "echoMode",
+        "sungOnly",
+        "maxSpreadPx",
+        "maxScaleBoost",
+        "echoOpacity",
+        "tintA",
+        "tintB",
+        "blurSigmaPx",
+        "fallbackBpm"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-echo",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "kinetic-echo",
+      "kind": "graph",
+      "name": "节拍动感残影（行图）",
+      "graph": "graphs/kinetic-echo.graph.json",
+      "parameters": [
+        "blurSigmaPx",
+        "sungOnly"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "image.graph"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

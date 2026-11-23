@@ -1,0 +1,212 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.acoustic-ripple-rain",
+  "name": "声波雨滴与文字水纹涟漪",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/AcousticRippleRain.cs",
+      "role": "csharp",
+      "sha256": "efbc04c3ba6c0ef6b52850268a1916aeb5ded94e24cd44aa90d32e3e1a8cae49"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "ebad3600d56c8b3fd0fee32dc715399c2ad6ae4aa033022a512afeafa9606d58"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "rainAngleDeg",
+      "type": "number",
+      "label": "雨丝下落倾角",
+      "default": 12,
+      "min": -35,
+      "max": 35,
+      "unit": "deg"
+    },
+    {
+      "id": "fallUs",
+      "type": "duration",
+      "label": "雨滴下落提前时长",
+      "default": 280000,
+      "min": 80000,
+      "max": 800000,
+      "unit": "us"
+    },
+    {
+      "id": "rainLengthPx",
+      "type": "number",
+      "label": "雨丝长度",
+      "default": 56,
+      "min": 16,
+      "max": 140,
+      "unit": "px"
+    },
+    {
+      "id": "rippleUs",
+      "type": "duration",
+      "label": "水波涟漪持续时长",
+      "default": 750000,
+      "min": 200000,
+      "max": 2000000,
+      "unit": "us"
+    },
+    {
+      "id": "rippleRings",
+      "type": "integer",
+      "label": "涟漪环数",
+      "default": 2,
+      "min": 1,
+      "max": 3
+    },
+    {
+      "id": "rippleRadiusPx",
+      "type": "number",
+      "label": "涟漪基础最大半径",
+      "default": 54,
+      "min": 16,
+      "max": 120,
+      "unit": "px"
+    },
+    {
+      "id": "splashCount",
+      "type": "integer",
+      "label": "击字飞溅水珠数",
+      "default": 8,
+      "min": 0,
+      "max": 16
+    },
+    {
+      "id": "enableTextWarp",
+      "type": "boolean",
+      "label": "启用单字水波网格微震",
+      "default": true
+    },
+    {
+      "id": "warpAmplitudePx",
+      "type": "number",
+      "label": "文字微震幅度",
+      "default": 5.5,
+      "min": 0,
+      "max": 14,
+      "unit": "px"
+    },
+    {
+      "id": "rainColor",
+      "type": "color",
+      "label": "雨滴与水波主色",
+      "default": {
+        "r": 0.25,
+        "g": 0.76,
+        "b": 1,
+        "a": 0.96
+      }
+    },
+    {
+      "id": "rippleAccentColor",
+      "type": "color",
+      "label": "水波高光副色",
+      "default": {
+        "r": 0.92,
+        "g": 0.98,
+        "b": 1,
+        "a": 0.95
+      }
+    },
+    {
+      "id": "fallbackBpm",
+      "type": "number",
+      "label": "无音频分析时备用BPM",
+      "default": 120,
+      "min": 0,
+      "max": 240,
+      "unit": "BPM"
+    }
+  ],
+  "exports": [
+    {
+      "id": "acoustic-ripple-rain",
+      "kind": "controller",
+      "name": "声波雨滴与文字水纹涟漪",
+      "entryType": "AcousticRippleRain",
+      "parameters": [
+        "rainAngleDeg",
+        "fallUs",
+        "rainLengthPx",
+        "rippleUs",
+        "rippleRings",
+        "rippleRadiusPx",
+        "splashCount",
+        "enableTextWarp",
+        "warpAmplitudePx",
+        "rainColor",
+        "rippleAccentColor",
+        "fallbackBpm"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "text-ripple",
+          "kind": "VisualTransform",
+          "target": "tokenFamily",
+          "requires": [],
+          "dependsOn": []
+        },
+        {
+          "id": "splash",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "particles.burst"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "rain-and-ripples",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.segments"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "splash-dots",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.dots"
+          ],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "token.warp",
+    "particles.burst",
+    "visuals.segments",
+    "visuals.dots",
+    "timeline.index"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": [
+    {
+      "id": "splash",
+      "kind": "burst",
+      "maxLifetimeUs": 3000000
+    }
+  ]
+}

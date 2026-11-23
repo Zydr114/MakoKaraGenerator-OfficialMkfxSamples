@@ -1,0 +1,296 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.chroma-firefly-bokeh",
+  "name": "环境取色萤火与焦外散景",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/ChromaFireflyBokeh.cs",
+      "role": "csharp",
+      "sha256": "b3d01ef5c4c552a62916613120019defae29ed919f07f815015819cad428aa52"
+    },
+    {
+      "path": "assets/bokeh-orb.svg",
+      "role": "svg",
+      "sha256": "93eecd7337747f00ef3d6b9364fcbf0922f0d1341bedf2a6d6be9d93a3b5a68c"
+    },
+    {
+      "path": "resources/bokeh-orb.json",
+      "role": "svgResource",
+      "sha256": "5c93600f3cc52a2f3833125c97ffeca16e0dedb66e83e9bfa6de61879fe5383d"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "48151983a3653271d4cfeb591f382ca4ea45bfade313d9dd8554c5855d58ffcc"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "fireflyRate",
+      "type": "number",
+      "label": "萤火生成速率",
+      "default": 22,
+      "min": 2,
+      "max": 80,
+      "unit": "/s"
+    },
+    {
+      "id": "bokehBurstCount",
+      "type": "integer",
+      "label": "音节触发散景光斑数",
+      "default": 3,
+      "min": 0,
+      "max": 8
+    },
+    {
+      "id": "lifeUs",
+      "type": "duration",
+      "label": "光斑与萤火存活时长",
+      "default": 2200000,
+      "min": 500000,
+      "max": 4500000,
+      "unit": "us"
+    },
+    {
+      "id": "trailUs",
+      "type": "duration",
+      "label": "萤火柔光拖尾时长",
+      "default": 480000,
+      "min": 0,
+      "max": 1500000,
+      "unit": "us"
+    },
+    {
+      "id": "fireflySizePx",
+      "type": "number",
+      "label": "萤火核心尺寸",
+      "default": 14,
+      "min": 3,
+      "max": 32,
+      "unit": "px"
+    },
+    {
+      "id": "bokehSizePx",
+      "type": "number",
+      "label": "焦外散景光斑尺寸",
+      "default": 64,
+      "min": 16,
+      "max": 140,
+      "unit": "px"
+    },
+    {
+      "id": "driftPx",
+      "type": "number",
+      "label": "正弦微飘振幅",
+      "default": 34,
+      "min": 0,
+      "max": 96,
+      "unit": "px"
+    },
+    {
+      "id": "sceneColorMix",
+      "type": "number",
+      "label": "背景环境取色融合比例",
+      "default": 0.78,
+      "min": 0,
+      "max": 1
+    },
+    {
+      "id": "accentTint",
+      "type": "color",
+      "label": "主强调色调",
+      "default": {
+        "r": 0.45,
+        "g": 0.92,
+        "b": 1,
+        "a": 0.92
+      }
+    },
+    {
+      "id": "secondaryTint",
+      "type": "color",
+      "label": "备用双色副色调",
+      "default": {
+        "r": 1,
+        "g": 0.78,
+        "b": 0.38,
+        "a": 0.88
+      }
+    },
+    {
+      "id": "bridgeLines",
+      "type": "boolean",
+      "label": "跨行萤火滑行衔接",
+      "default": true
+    }
+  ],
+  "mediaQueries": [
+    {
+      "id": "ambient",
+      "space": "canvasPixels",
+      "window": {
+        "kind": "literal",
+        "durationUs": 400000
+      }
+    }
+  ],
+  "exports": [
+    {
+      "id": "chroma-firefly-bokeh",
+      "kind": "controller",
+      "name": "环境取色萤火与焦外散景",
+      "entryType": "ChromaFireflyBokeh",
+      "parameters": [
+        "fireflyRate",
+        "bokehBurstCount",
+        "lifeUs",
+        "trailUs",
+        "fireflySizePx",
+        "bokehSizePx",
+        "driftPx",
+        "sceneColorMix",
+        "accentTint",
+        "secondaryTint",
+        "bridgeLines"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "fireflies",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "particles.continuous"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "bokeh-line-burst",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "particles.burst"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "bokeh-token-burst",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "particles.burst"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "bokeh-behind",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.sprites",
+            "resources.svg.atlas"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "firefly-trails",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.trails"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "firefly-above",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.dots"
+          ],
+          "dependsOn": []
+        }
+      ],
+      "mediaQueries": [
+        {
+          "query": "ambient",
+          "fallback": {
+            "pending": {
+              "kind": "authorBranch",
+              "outputs": [
+                "fireflies",
+                "bokeh-line-burst",
+                "bokeh-token-burst",
+                "bokeh-behind",
+                "firefly-trails",
+                "firefly-above"
+              ]
+            },
+            "unavailable": {
+              "kind": "authorBranch",
+              "outputs": [
+                "fireflies",
+                "bokeh-line-burst",
+                "bokeh-token-burst",
+                "bokeh-behind",
+                "firefly-trails",
+                "firefly-above"
+              ]
+            },
+            "noMedia": {
+              "kind": "authorBranch",
+              "outputs": [
+                "fireflies",
+                "bokeh-line-burst",
+                "bokeh-token-burst",
+                "bokeh-behind",
+                "firefly-trails",
+                "firefly-above"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "particles.continuous",
+    "particles.burst",
+    "media.features",
+    "visuals.sprites",
+    "visuals.dots",
+    "visuals.trails",
+    "resources.svg.atlas",
+    "timeline.index"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": [
+    {
+      "id": "fireflies",
+      "kind": "cursor",
+      "maxLifetimeUs": 5000000
+    },
+    {
+      "id": "bokeh-line-burst",
+      "kind": "burst",
+      "maxLifetimeUs": 5000000
+    },
+    {
+      "id": "bokeh-token-burst",
+      "kind": "burst",
+      "maxLifetimeUs": 5000000
+    }
+  ]
+}

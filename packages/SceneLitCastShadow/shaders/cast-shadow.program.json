@@ -1,0 +1,25 @@
+{
+  "programVersion": 1,
+  "source": "shaders/cast-shadow.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    {
+      "name": "uShadowColor",
+      "type": "color"
+    },
+    {
+      "name": "uOpacity",
+      "type": "float"
+    },
+    {
+      "name": "uLineGeo",
+      "type": "float4"
+    }
+  ],
+  "children": [
+    {
+      "name": "castShadow",
+      "type": "color"
+    }
+  ]
+}

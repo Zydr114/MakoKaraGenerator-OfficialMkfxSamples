@@ -1,0 +1,128 @@
+{
+  "graphVersion": 1,
+  "id": "manga-halftone-pop",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    },
+    {
+      "id": "sung",
+      "source": "SungCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    },
+    {
+      "id": "glyph",
+      "source": "GlyphCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    }
+  ],
+  "parameters": [
+    "dotPitchPx",
+    "misalignPx",
+    "inkColorA",
+    "inkColorB",
+    "shadowOffsetPx",
+    "halftoneContrast"
+  ],
+  "nodes": [
+    {
+      "id": "sungOnly",
+      "op": "Mask",
+      "color": "input:original",
+      "coverage": "input:sung",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "popGlow",
+      "op": "Blur",
+      "input": "node:sungOnly",
+      "sigmaPx": 5.5,
+      "bounds": {
+        "expandPx": 18,
+        "maxExpandPx": 18,
+        "maxSampleOffsetPx": 18
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "halftone",
+      "op": "RuntimeShader",
+      "program": "shaders/manga-halftone.program.json",
+      "children": {
+        "original": "input:original",
+        "sung": "input:sung",
+        "glyph": "input:glyph",
+        "popGlow": "node:popGlow"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "dotPitchPx": "parameter:dotPitchPx",
+        "misalignPx": "parameter:misalignPx",
+        "inkColorA": "parameter:inkColorA",
+        "inkColorB": "parameter:inkColorB",
+        "shadowOffsetPx": "parameter:shadowOffsetPx",
+        "halftoneContrast": "parameter:halftoneContrast"
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 28,
+        "maxExpandPx": 28,
+        "maxSampleOffsetPx": 28
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:halftone",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 48
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

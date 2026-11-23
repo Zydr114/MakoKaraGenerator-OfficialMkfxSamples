@@ -1,0 +1,66 @@
+{
+  "graphVersion": 1,
+  "id": "chrome-foil",
+  "inputs": [
+    {
+      "id": "coverage",
+      "source": "TargetRegionCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "materialRegion"
+      }
+    }
+  ],
+  "parameters": [
+    "liquidWarp",
+    "metallicContrast",
+    "sheenSpeed",
+    "fallbackSkyColor",
+    "fallbackGroundColor"
+  ],
+  "nodes": [
+    {
+      "id": "chrome",
+      "op": "RuntimeShader",
+      "program": "shaders/chrome-foil.program.json",
+      "children": {
+        "coverage": "input:coverage"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "liquidWarp": "parameter:liquidWarp",
+        "metallicContrast": "parameter:metallicContrast",
+        "sheenSpeed": "parameter:sheenSpeed",
+        "uSkyColor": "parameter:fallbackSkyColor",
+        "fallbackGroundColor": "parameter:fallbackGroundColor",
+        "uGroundAndState": [0.0, 0.0, 0.0, -1.0]
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 8
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:chrome",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 0
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

@@ -1,0 +1,167 @@
+uniform float timeSeconds;
+uniform float scanlineIntensity;
+uniform float glitchStrength;
+uniform float aberrationPx;
+layout(color) uniform float4 phosphorTint;
+uniform float glitchBurst;
+uniform float bassLevel;
+uniform float beatPhase;
+uniform float glitchSeed;
+uniform float exitProgress;
+uniform float collapseExit;
+uniform float4 lineBounds;
+
+uniform shader original;
+uniform shader bloom;
+uniform shader sung;
+
+float hash11(float p) {
+    float x = fract(p * 0.1031);
+    x *= x + 33.33;
+    x *= x + x;
+    return fract(x);
+}
+
+float hash21(float2 p) {
+    float3 p3 = fract(float3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+float3 straightRgb(half4 s) {
+    return s.a > 0.0001 ? clamp(float3(s.rgb) / float(s.a), 0.0, 1.0) : float3(0.0);
+}
+
+half4 main(float2 p) {
+    float uExit = clamp(exitProgress, 0.0, 1.0);
+    if (uExit >= 0.995) {
+        return half4(0.0);
+    }
+
+    float2 center = 0.5 * (lineBounds.xy + lineBounds.zw);
+    float2 halfExt = max(0.5 * (lineBounds.zw - lineBounds.xy), float2(24.0, 14.0));
+
+    float2 sampleP = p;
+    float exitFade = 1.0;
+    float exitBeamAdd = 0.0;
+    float exitDotAdd = 0.0;
+
+    // CRT 关机横线坍缩退场：先垂直压扁成高亮水平扫描线，再沿水平向中心闪灭
+    if (uExit > 0.001) {
+        if (collapseExit > 0.5) {
+            if (uExit < 0.56) {
+                float p1 = clamp(uExit / 0.56, 0.0, 1.0);
+                float ease1 = p1 * p1;
+                float scaleY = mix(1.0, 0.06, ease1);
+                float scaleX = mix(1.0, 1.08, p1);
+                float2 rawCollapse = float2(
+                    center.x + (p.x - center.x) / scaleX,
+                    center.y + (p.y - center.y) / scaleY);
+                // 严格限制采样偏移在 40px 以内，符合 maxSampleOffsetPx=48 约束
+                float2 delta = clamp(rawCollapse - p, float2(-40.0), float2(40.0));
+                sampleP = p + delta;
+
+                float xMask = 1.0 - smoothstep(halfExt.x * scaleX * 0.65, halfExt.x * scaleX + 14.0, abs(p.x - center.x));
+                float beamSigma = mix(12.0, 2.2, p1);
+                exitBeamAdd = exp(-abs(p.y - center.y) / beamSigma) * smoothstep(0.08, 0.45, p1) * xMask * 1.15;
+                exitFade = mix(1.0, 0.72, p1);
+            } else {
+                float p2 = clamp((uExit - 0.56) / 0.44, 0.0, 1.0);
+                float halfW = mix(halfExt.x * 1.08, 2.5, smoothstep(0.0, 0.85, p2));
+                float xGate = 1.0 - smoothstep(max(1.5, halfW - 6.0), halfW + 6.0, abs(p.x - center.x));
+                float yBeam = exp(-abs(p.y - center.y) / mix(2.2, 1.1, p2));
+                float fade2 = 1.0 - smoothstep(0.68, 1.0, p2);
+                exitBeamAdd = yBeam * xGate * fade2 * 1.35;
+
+                float2 dDot = (p - center) / float2(mix(20.0, 5.5, p2), 3.0);
+                exitDotAdd = exp(-dot(dDot, dDot)) * (1.0 - smoothstep(0.55, 1.0, p2)) * 1.25;
+                exitFade = 0.0;
+                sampleP = p;
+            }
+        } else {
+            exitFade = 1.0 - smoothstep(0.0, 1.0, uExit);
+        }
+    }
+
+    // 鼓点触发的水平块状故障错位
+    float burst = clamp(glitchBurst, 0.0, 1.0);
+    float gStr = clamp(glitchStrength, 0.0, 1.5);
+    float burstGate = smoothstep(0.18, 0.72, burst);
+
+    float bandCoarse = floor(sampleP.y / 11.0);
+    float bandFine = floor(sampleP.y / 4.5);
+    float hCoarse = hash21(float2(bandCoarse, floor(glitchSeed * 97.0)));
+    float hFine = hash21(float2(bandFine, floor(glitchSeed * 211.0 + 13.0)));
+
+    float sliceTrigger = step(1.0 - (0.14 + 0.34 * burstGate), hCoarse) * burstGate;
+    float fineTrigger = step(1.0 - (0.08 + 0.24 * burstGate), hFine) * burstGate;
+
+    float coarseDir = (hash11(bandCoarse + glitchSeed * 43.0) - 0.5) * 2.0;
+    float fineDir = (hash11(bandFine + glitchSeed * 71.0) - 0.5) * 2.0;
+    float rawSliceShift = (coarseDir * 24.0 * sliceTrigger + fineDir * 10.0 * fineTrigger) * gStr;
+
+    float2 glitchP = sampleP + float2(clamp(rawSliceShift, -28.0, 28.0), 0.0);
+    // 确保整体采样偏移（坍缩 + 故障）不超过 44px
+    glitchP = p + clamp(glitchP - p, float2(-42.0), float2(42.0));
+
+    half4 origAtG = original.eval(glitchP);
+    float sMask = clamp(float(sung.eval(glitchP).a), 0.0, 1.0);
+    float origA = clamp(float(origAtG.a), 0.0, 1.0);
+
+    // RGB 色散分离（已唱部分与鼓点脉冲增强，严格限制在 16px 内）
+    float chromaOffset = clamp(
+        aberrationPx * (0.28 + 0.72 * sMask + 1.15 * burstGate * gStr) * (0.65 + 0.65 * sliceTrigger + 0.35 * bassLevel),
+        0.0,
+        14.0);
+    float2 rPos = p + clamp(glitchP - p + float2(chromaOffset, 0.0), float2(-46.0), float2(46.0));
+    float2 bPos = p + clamp(glitchP - p - float2(chromaOffset, 0.0), float2(-46.0), float2(46.0));
+
+    half4 sampR = original.eval(rPos);
+    half4 sampB = original.eval(bPos);
+    float3 rgbR = straightRgb(sampR);
+    float3 rgbG = straightRgb(origAtG);
+    float3 rgbB = straightRgb(sampB);
+
+    float3 dispRgb = float3(
+        mix(rgbG.r, rgbR.r, clamp(float(sampR.a) * (0.55 + 0.45 * sMask + 0.5 * sliceTrigger), 0.0, 1.0)),
+        rgbG.g,
+        mix(rgbG.b, rgbB.b, clamp(float(sampB.a) * (0.55 + 0.45 * sMask + 0.5 * sliceTrigger), 0.0, 1.0)));
+
+    float dispAlpha = clamp(max(origA, max(float(sampR.a), float(sampB.a)) * (0.65 + 0.35 * burstGate)), 0.0, 1.0);
+
+    // 故障撕裂局部赛博青/品红偏色冲击
+    float3 glitchAccent = mix(phosphorTint.rgb, float3(1.0, 0.18, 0.68), step(0.5, hFine));
+    dispRgb = mix(dispRgb, glitchAccent * 1.1, sliceTrigger * 0.42 * gStr);
+
+    // CRT 扫描线 + RGB 荧光粉子像素格栅
+    float scanAmt = clamp(scanlineIntensity, 0.0, 1.0);
+    float scanWave = 0.5 + 0.5 * sin(p.y * 2.61799 + beatPhase * 1.25);
+    float scanMask = 1.0 - scanAmt * 0.42 * scanWave;
+
+    float subPhase = p.x * 2.0943951;
+    float3 grille = 0.5 + 0.5 * cos(subPhase + float3(0.0, 2.0943951, 4.1887902));
+    float3 grilleMod = mix(float3(1.0), 0.72 + 0.58 * grille, scanAmt * 0.38);
+
+    // 已唱区域叠加磷光余辉 Bloom
+    half4 bloomSample = bloom.eval(sampleP);
+    float bloomA = clamp(float(bloomSample.a), 0.0, 1.0);
+    float3 bloomRgb = straightRgb(bloomSample);
+    float3 phosphorGlow = mix(bloomRgb, phosphorTint.rgb, 0.65) * bloomA * (0.72 + 0.68 * bassLevel);
+
+    float3 litTextRgb = clamp(dispRgb * scanMask * grilleMod, 0.0, 1.0);
+    // 已唱文字本体微染 CRT 荧光青辉光边缘
+    litTextRgb = mix(litTextRgb, clamp(litTextRgb * 0.85 + phosphorTint.rgb * 0.45, 0.0, 1.0), sMask * 0.32);
+
+    float textA = dispAlpha * exitFade;
+    float3 textPremul = litTextRgb * textA;
+    float3 bloomPremul = phosphorGlow * exitFade * (1.0 - textA * 0.45);
+
+    // 叠加关机电子束横线与中心闪点
+    float3 beamColor = mix(phosphorTint.rgb, float3(1.0), 0.72);
+    float beamA = clamp(exitBeamAdd + exitDotAdd, 0.0, 1.0);
+    float3 beamPremul = beamColor * beamA;
+
+    float outAlpha = clamp(textA + bloomA * 0.55 * exitFade * (1.0 - textA) + beamA * (1.0 - textA), 0.0, 1.0);
+    float3 outRgb = clamp(textPremul + bloomPremul + beamPremul, float3(0.0), float3(outAlpha));
+    return half4(outRgb, outAlpha);
+}

@@ -1,0 +1,34 @@
+{
+  "svgResourceVersion": 1,
+  "id": "smoke-puff",
+  "source": "assets/smoke-puff.svg",
+  "profile": "mako-svg-static-1",
+  "mode": "atlas",
+  "viewport": {
+    "width": 128,
+    "height": 128
+  },
+  "fonts": [],
+  "images": [],
+  "atlas": {
+    "variants": [
+      {
+        "id": "small",
+        "width": 48,
+        "height": 48
+      },
+      {
+        "id": "medium",
+        "width": 96,
+        "height": 96
+      },
+      {
+        "id": "large",
+        "width": 192,
+        "height": 192
+      }
+    ],
+    "paddingPx": 4,
+    "mipmaps": true
+  }
+}

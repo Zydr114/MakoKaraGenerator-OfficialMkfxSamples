@@ -1,0 +1,111 @@
+uniform float timeSeconds;
+uniform float liquidWarp;
+uniform float metallicContrast;
+uniform float sheenSpeed;
+layout(color) uniform float4 uSkyColor;
+layout(color) uniform float4 fallbackGroundColor;
+uniform float4 uGroundAndState;
+uniform shader coverage;
+
+float3 applyContrast(float3 c, float contrast) {
+    float3 centered = c - float3(0.5);
+    return clamp(float3(0.5) + centered * contrast, 0.0, 1.0);
+}
+
+half4 main(float2 p) {
+    float cov = clamp(float(coverage.eval(p).a), 0.0, 1.0);
+    if (cov <= 0.0005) {
+        return half4(0.0);
+    }
+
+    // 多尺度覆盖度梯度：内层 1.5px 给出锐利倒角高光，外层 4.2px 给出饱满液态凸起法线
+    float covL1 = float(coverage.eval(p - float2(1.5, 0.0)).a);
+    float covR1 = float(coverage.eval(p + float2(1.5, 0.0)).a);
+    float covU1 = float(coverage.eval(p - float2(0.0, 1.5)).a);
+    float covD1 = float(coverage.eval(p + float2(0.0, 1.5)).a);
+
+    float covL2 = float(coverage.eval(p - float2(4.2, 0.0)).a);
+    float covR2 = float(coverage.eval(p + float2(4.2, 0.0)).a);
+    float covU2 = float(coverage.eval(p - float2(0.0, 4.2)).a);
+    float covD2 = float(coverage.eval(p + float2(0.0, 4.2)).a);
+
+    float2 gradInner = float2(covL1 - covR1, covU1 - covD1);
+    float2 gradOuter = float2(covL2 - covR2, covU2 - covD2);
+    float2 grad = gradInner * 0.55 + gradOuter * 0.45;
+    float gradMag = length(grad);
+    float2 edgeDir = gradMag > 0.001 ? grad / gradMag : float2(0.0, 0.0);
+
+    // 解包控制器状态：w < 0 表示独立材质模式，使用 fallbackGroundColor
+    float rawState = uGroundAndState.w;
+    bool hasController = rawState >= 0.0;
+    float intCode = hasController ? floor(rawState + 0.0001) : 0.0;
+    float sheenFrac = hasController ? clamp((rawState - intCode) / 0.98, 0.0, 1.0) : 0.55;
+    float lumaCode = floor(intCode / 32.0);
+    float varCode = intCode - lumaCode * 32.0;
+    float bgLuma = hasController ? clamp(lumaCode / 31.0, 0.0, 1.0) : 0.35;
+    float bgVar = hasController ? clamp(varCode / 31.0, 0.0, 1.0) : 0.25;
+
+    float3 skyCol = clamp(uSkyColor.rgb, 0.0, 1.0);
+    float3 groundCol = hasController ? clamp(uGroundAndState.rgb, 0.0, 1.0) : clamp(fallbackGroundColor.rgb, 0.0, 1.0);
+
+    // 液态铬表面波纹扰动（受背景纹理方差微幅激励）
+    float phase = timeSeconds * sheenSpeed * 2.4;
+    float rippleAmp = clamp(liquidWarp, 0.0, 2.0) * (0.28 + 0.26 * bgVar);
+    float wave1 = sin(p.x * 0.042 + p.y * 0.026 + phase) * cos(p.y * 0.055 - p.x * 0.019 - phase * 0.7);
+    float wave2 = sin(p.x * 0.088 - p.y * 0.068 - phase * 1.15);
+    float2 liquidN = float2(
+        wave1 * 0.65 + wave2 * 0.35,
+        cos(p.y * 0.048 + p.x * 0.021 + phase * 0.85) * 0.65 - wave2 * 0.35
+    ) * rippleAmp;
+
+    // 构造 3D 凸起法线
+    float bevelWeight = clamp(gradMag * 1.45, 0.0, 1.0);
+    float3 normal = normalize(float3(
+        edgeDir.x * bevelWeight * 1.25 + liquidN.x,
+        edgeDir.y * bevelWeight * 1.25 + liquidN.y,
+        0.58 - 0.30 * bevelWeight
+    ));
+
+    // 金属环境反射：天光 + 经典镀铬深暗地平线带 + 地反
+    float3 refl = reflect(float3(0.0, 0.0, -1.0), normal);
+    float horizon = clamp(refl.y + wave1 * 0.14 * clamp(liquidWarp, 0.0, 2.0), -1.0, 1.0);
+
+    float3 skyBright = mix(skyCol, float3(0.96, 0.98, 1.0), 0.38);
+    float3 groundWarm = mix(groundCol, float3(1.0, 0.96, 0.92), 0.22);
+    float3 upperEnv = mix(skyCol, skyBright, smoothstep(-0.12, -0.78, horizon));
+    float3 lowerEnv = mix(groundCol * 0.78, groundWarm, smoothstep(0.06, 0.62, horizon));
+
+    float3 chrome = mix(upperEnv, lowerEnv, smoothstep(-0.08, 0.12, horizon));
+
+    // 标志性液态铬锐利地平线暗带与紧邻银白高光带
+    float darkTrough = exp(-pow((horizon + 0.01) * 8.5, 2.0));
+    float3 troughCol = mix(skyCol, groundCol, 0.5) * 0.18 + float3(0.04, 0.05, 0.08);
+    chrome = mix(chrome, troughCol, darkTrough * 0.85);
+
+    float horizonGlint = exp(-pow((horizon - 0.14) * 12.0, 2.0));
+    chrome += float3(0.88, 0.93, 1.0) * horizonGlint * 0.52;
+
+    // 次级流光波纹高光
+    float specWave = 0.5 + 0.5 * sin(p.x * 0.032 - p.y * 0.048 + phase * 1.1 + wave1 * 2.2);
+    float liquidSpec = pow(specWave, 6.0) * (0.28 + 0.35 * sheenFrac);
+    chrome += mix(skyBright, float3(1.0), 0.55) * liquidSpec;
+
+    // 演唱流光斜扫带
+    float sweepCoord = (p.x * 0.012 + p.y * 0.008) - (phase * 0.55 + sheenFrac * 2.6);
+    float sweepBand = pow(max(0.0, cos(sweepCoord)), 10.0) * (0.22 + 0.78 * sheenFrac);
+    chrome += float3(1.0, 0.98, 0.95) * sweepBand * 0.62;
+
+    chrome = applyContrast(chrome, clamp(metallicContrast, 0.4, 2.0));
+
+    // 自适应菲涅耳轮廓边缘：暗背景提亮银边，亮背景压深冷枪灰边以保证清晰轮廓
+    float fresnel = pow(1.0 - clamp(normal.z, 0.0, 1.0), 1.85);
+    float rimMask = clamp(fresnel * 1.15 + bevelWeight * 0.35, 0.0, 1.0);
+    float darkBgWeight = 1.0 - smoothstep(0.28, 0.68, bgLuma);
+    float3 brightRim = mix(skyBright, float3(0.98, 0.99, 1.0), 0.65);
+    float3 darkRim = mix(troughCol, float3(0.08, 0.11, 0.16), 0.72);
+    float3 rimColor = mix(darkRim, brightRim, darkBgWeight);
+    chrome = mix(chrome, rimColor, rimMask * (0.42 + 0.25 * darkBgWeight));
+
+    float3 outRgb = clamp(chrome, 0.0, 1.0);
+    return half4(outRgb * cov, cov);
+}

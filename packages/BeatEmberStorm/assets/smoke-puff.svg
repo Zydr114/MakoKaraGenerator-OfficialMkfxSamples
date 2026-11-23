@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <radialGradient id="puffMain" gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.72"/>
+      <stop offset="0.45" stop-color="#f7efe8" stop-opacity="0.42"/>
+      <stop offset="0.78" stop-color="#eee4dc" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="puffLobe" gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.58"/>
+      <stop offset="0.55" stop-color="#f2e6dc" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="64" cy="64" r="54" fill="url(#puffMain)"/>
+  <circle cx="46" cy="54" r="34" fill="url(#puffLobe)"/>
+  <circle cx="80" cy="58" r="32" fill="url(#puffLobe)"/>
+  <circle cx="62" cy="78" r="33" fill="url(#puffLobe)"/>
+</svg>

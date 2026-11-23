@@ -1,0 +1,98 @@
+{
+  "graphVersion": 1,
+  "id": "cast-shadow-line",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    }
+  ],
+  "parameters": [
+    "shadowBlurPx",
+    "shadowOpacity",
+    "defaultShadowColor"
+  ],
+  "nodes": [
+    {
+      "id": "cast",
+      "op": "Transform",
+      "input": "input:original",
+      "matrix": [1.0, 0.0, 0.0, 1.0, 12.0, 14.0],
+      "outputBounds": [0, 0, 1280, 720],
+      "bounds": {
+        "expandPx": 140,
+        "maxExpandPx": 140,
+        "maxSampleOffsetPx": 240
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "penumbra",
+      "op": "Blur",
+      "input": "node:cast",
+      "sigmaPx": "parameter:shadowBlurPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:shadowBlurPx)",
+        "maxExpandPx": 36,
+        "maxSampleOffsetPx": 36
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "shadowTint",
+      "op": "RuntimeShader",
+      "program": "shaders/cast-shadow.program.json",
+      "children": {
+        "castShadow": "node:penumbra"
+      },
+      "uniforms": {
+        "uShadowColor": "parameter:defaultShadowColor",
+        "uOpacity": "parameter:shadowOpacity",
+        "uLineGeo": [360.0, 360.0, -0.7, 1.0]
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "composite",
+      "op": "Blend",
+      "foreground": "input:original",
+      "background": "node:shadowTint",
+      "mode": "sourceOver",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:composite",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 180
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

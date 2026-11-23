@@ -22,6 +22,9 @@ internal static class Scenarios
     private static readonly long[] RubySwellTimes = [2_180_000, 2_400_000, 3_120_000, 3_320_000, 3_450_000];
     private static readonly long[] RubyBurstTimes = [2_060_000, 2_310_000, 3_060_000, 3_250_000];
     private static readonly long[] FlipTimes = [2_250_000, 2_420_000, 3_250_000, 5_200_000, 5_400_000, 6_400_000];
+    private static readonly long[] RippleTimes = [2_380_000, 2_560_000, 3_120_000, 4_900_000, 6_400_000];
+    private static readonly long[] CrtExitTimes = [2_100_000, 3_250_000, 5_180_000, 5_420_000, 6_400_000];
+    private static readonly long[] EmberExitTimes = [2_750_000, 3_250_000, 4_900_000, 5_650_000, 6_400_000];
 
     internal static IReadOnlyList<Scenario> All { get; } =
     [
@@ -138,6 +141,110 @@ internal static class Scenarios
                 """{"backdropSource":"below"}"""),
             ExitTimes,
             WithAudioAnalysis: true),
+
+        new("SceneWaterReflection", "default",
+            (project, package) => WithInstance(project, package, "scene-water-reflection"),
+            DefaultTimes),
+        new("SceneWaterReflection", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "scene-water-reflection"),
+            DefaultTimes),
+
+        new("BeatKineticEcho", "default",
+            (project, package) => WithInstance(project, package, "beat-kinetic-echo"),
+            DefaultTimes),
+        new("BeatKineticEcho", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "beat-kinetic-echo",
+                """{"fallbackBpm":0,"sungOnly":true}"""),
+            DefaultTimes,
+            WithAudioAnalysis: true),
+        new("BeatKineticEcho", "horizontalShear",
+            (project, package) => WithInstance(project, package, "beat-kinetic-echo",
+                """{"echoMode":"horizontalShear"}"""),
+            DefaultTimes,
+            WithAudioAnalysis: true),
+        new("BeatKineticEcho", "orbitalSplit",
+            (project, package) => WithInstance(project, package, "beat-kinetic-echo",
+                """{"echoMode":"orbitalSplit"}"""),
+            DefaultTimes,
+            WithAudioAnalysis: true),
+
+        new("BeatEmberStorm", "default",
+            (project, package) => WithInstance(project, package, "beat-ember-storm"),
+            TrailTimes),
+        new("BeatEmberStorm", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "beat-ember-storm",
+                """{"fallbackBpm":0}"""),
+            TrailTimes,
+            WithAudioAnalysis: true),
+
+        new("ChromaFireflyBokeh", "default",
+            (project, package) => WithInstance(project, package, "chroma-firefly-bokeh"),
+            TrailTimes),
+        new("ChromaFireflyBokeh", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "chroma-firefly-bokeh"),
+            TrailTimes,
+            WithAudioAnalysis: true),
+
+        new("AcousticRippleRain", "default",
+            (project, package) => WithInstance(project, package, "acoustic-ripple-rain"),
+            RippleTimes),
+        new("AcousticRippleRain", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "acoustic-ripple-rain",
+                """{"fallbackBpm":0}"""),
+            RippleTimes,
+            WithAudioAnalysis: true),
+        new("AcousticRippleRain", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "acoustic-ripple-rain"),
+            RippleTimes),
+
+        new("CyberCrtGlitch", "default",
+            (project, package) => WithInstance(project, package, "cyber-crt-glitch"),
+            DefaultTimes),
+        new("CyberCrtGlitch", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "cyber-crt-glitch", """{"fallbackBpm":0}"""),
+            CrtExitTimes,
+            WithAudioAnalysis: true),
+
+        new("EmberIgniteBurn", "default",
+            (project, package) => WithInstance(project, package, "ember-ignite-burn"),
+            DefaultTimes),
+        new("EmberIgniteBurn", "analyzed-audio",
+            (project, package) => WithInstance(project, package, "ember-ignite-burn", """{"fallbackBpm":0}"""),
+            EmberExitTimes,
+            WithAudioAnalysis: true),
+        new("EmberIgniteBurn", "charred-ember-exit",
+            (project, package) => WithInstance(project, package, "ember-ignite-burn",
+                """{"burnStyle":"charredEmber"}"""),
+            EmberExitTimes,
+            WithAudioAnalysis: true),
+
+        new("MangaHalftonePop", "default",
+            (project, package) => WithInstance(project, package, "manga-halftone-pop"),
+            DefaultTimes),
+        new("MangaHalftonePop", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "manga-halftone-pop"),
+            RubySwellTimes),
+
+        new("AdaptiveChromeFoil", "default",
+            (project, package) => WithInstance(project, package, "adaptive-chrome-foil"),
+            DefaultTimes),
+        new("AdaptiveChromeFoil", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "adaptive-chrome-foil"),
+            DefaultTimes),
+        new("AdaptiveChromeFoil", "material-standalone",
+            (project, package) => WithMaterial(project, package, "chrome-material", unsung: true, sung: true, stroke: true),
+            DefaultTimes),
+
+        new("SceneLitCastShadow", "default",
+            (project, package) => WithInstance(project, package, "scene-lit-cast-shadow"),
+            DefaultTimes),
+        new("SceneLitCastShadow", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "scene-lit-cast-shadow",
+                """{"defaultLightAngleDeg":-45,"maxSkew":1.15,"shadowOpacity":0.82}"""),
+            DefaultTimes),
+        new("SceneLitCastShadow", "graph-standalone",
+            (project, package) => WithInstance(project, package, "cast-shadow-line"),
+            DefaultTimes),
     ];
 
     internal static ProjectAudioAnalysis CreateSyntheticAudioAnalysis(long durationUs)

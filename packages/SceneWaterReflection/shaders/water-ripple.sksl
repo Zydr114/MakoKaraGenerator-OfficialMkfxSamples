@@ -1,0 +1,44 @@
+uniform float timeSeconds;
+uniform float waterlineY;
+uniform float reflSpanPx;
+uniform float rippleAmpPx;
+uniform float rippleFreq;
+uniform float reflectionOpacity;
+uniform float waterColorMix;
+layout(color) uniform half4 waterTint;
+uniform shader reflection;
+
+half4 main(float2 p) {
+    float depth = p.y - waterlineY;
+    if (depth < -18.0) {
+        return half4(0.0);
+    }
+
+    float onset = smoothstep(-6.0, 6.0, depth);
+    float normDepth = clamp(max(depth, 0.0) / max(reflSpanPx, 1.0), 0.0, 1.5);
+    float distFactor = 0.18 + 0.82 * clamp(normDepth, 0.0, 1.0);
+
+    float wave1 = sin(depth * rippleFreq * 0.24 - timeSeconds * 3.1 + p.x * 0.016);
+    float wave2 = cos(depth * rippleFreq * 0.43 + timeSeconds * 2.2 - p.x * 0.029);
+    float dx = clamp((0.68 * wave1 + 0.32 * wave2) * rippleAmpPx * distFactor, -23.5, 23.5);
+    float dy = clamp(0.16 * sin(p.x * 0.038 + timeSeconds * 2.5) * rippleAmpPx * distFactor, -23.5, 23.5);
+
+    half4 s = reflection.eval(p + float2(dx, dy));
+    float sa = float(s.a);
+    if (sa <= 0.0001) {
+        return half4(0.0);
+    }
+
+    float vFade = pow(clamp(1.0 - normDepth * 0.82, 0.0, 1.0), 1.35);
+    float outAlpha = clamp(sa * clamp(reflectionOpacity, 0.0, 1.0) * vFade * onset, 0.0, 1.0);
+    if (outAlpha <= 0.0001) {
+        return half4(0.0);
+    }
+
+    float3 baseRgb = float3(s.rgb) / sa;
+    float mixAmt = clamp(waterColorMix * (0.50 + 0.50 * clamp(normDepth, 0.0, 1.0)), 0.0, 1.0);
+    float3 tinted = mix(baseRgb, float3(waterTint.rgb), mixAmt);
+    float shimmer = 0.92 + 0.08 * wave1;
+    float3 outRgb = clamp(tinted * shimmer * outAlpha, float3(0.0), float3(outAlpha));
+    return half4(outRgb, outAlpha);
+}

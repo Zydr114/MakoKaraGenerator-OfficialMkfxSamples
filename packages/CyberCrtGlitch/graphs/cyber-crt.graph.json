@@ -1,0 +1,115 @@
+{
+  "graphVersion": 1,
+  "id": "cyber-crt-line",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    },
+    {
+      "id": "sung",
+      "source": "SungCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    }
+  ],
+  "parameters": [
+    "bloomSigmaPx"
+  ],
+  "nodes": [
+    {
+      "id": "sungOnly",
+      "op": "Mask",
+      "color": "input:original",
+      "coverage": "input:sung",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "phosphorBloom",
+      "op": "Blur",
+      "input": "node:sungOnly",
+      "sigmaPx": "parameter:bloomSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:bloomSigmaPx)",
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "crtGlitch",
+      "op": "RuntimeShader",
+      "program": "shaders/cyber-crt.program.json",
+      "children": {
+        "original": "input:original",
+        "bloom": "node:phosphorBloom",
+        "sung": "input:sung"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "scanlineIntensity": 0.48,
+        "glitchStrength": 0.85,
+        "aberrationPx": 4.0,
+        "phosphorTint": {
+          "r": 0.12,
+          "g": 0.96,
+          "b": 0.88,
+          "a": 1.0
+        },
+        "glitchBurst": 0.35,
+        "bassLevel": 0.35,
+        "beatPhase": 0.0,
+        "glitchSeed": 0.25,
+        "exitProgress": 0.0,
+        "collapseExit": 1.0,
+        "lineBounds": [0, 0, 1280, 720]
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 48,
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:crtGlitch",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 96
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

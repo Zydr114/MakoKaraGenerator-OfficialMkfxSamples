@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <radialGradient id="emberHalo" gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.65"/>
+      <stop offset="0.38" stop-color="#fff0c2" stop-opacity="0.38"/>
+      <stop offset="0.72" stop-color="#ffd098" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="shardFacetL" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="0.55" stop-color="#fff0c8" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#ffd294" stop-opacity="0.94"/>
+    </linearGradient>
+    <linearGradient id="shardFacetR" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffaf0" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#ffc880" stop-opacity="0.88"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="48" fill="url(#emberHalo)"/>
+  <path d="M64 8 L90 58 L64 120 L38 58 Z" fill="url(#shardFacetL)"/>
+  <path d="M64 8 L90 58 L64 120 L64 58 Z" fill="url(#shardFacetR)"/>
+  <path d="M64 20 L76 58 L64 102 L52 58 Z" fill="#ffffff" fill-opacity="0.95"/>
+</svg>

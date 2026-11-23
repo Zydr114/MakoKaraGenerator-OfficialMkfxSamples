@@ -1,0 +1,41 @@
+{
+  "programVersion": 1,
+  "source": "shaders/chrome-foil.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    {
+      "name": "timeSeconds",
+      "type": "float"
+    },
+    {
+      "name": "liquidWarp",
+      "type": "float"
+    },
+    {
+      "name": "metallicContrast",
+      "type": "float"
+    },
+    {
+      "name": "sheenSpeed",
+      "type": "float"
+    },
+    {
+      "name": "uSkyColor",
+      "type": "color"
+    },
+    {
+      "name": "fallbackGroundColor",
+      "type": "color"
+    },
+    {
+      "name": "uGroundAndState",
+      "type": "float4"
+    }
+  ],
+  "children": [
+    {
+      "name": "coverage",
+      "type": "coverage"
+    }
+  ]
+}

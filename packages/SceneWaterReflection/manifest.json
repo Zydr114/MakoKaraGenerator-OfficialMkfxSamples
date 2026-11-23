@@ -1,0 +1,218 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.scene-water-reflection",
+  "name": "实景水面倒影与波纹镜像",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/SceneWaterReflection.cs",
+      "role": "csharp",
+      "sha256": "711b072484f3fbc5f0c1eb30eef29fd4938f03c54b37970a94a93c171f9805fa"
+    },
+    {
+      "path": "graphs/water-reflection.graph.json",
+      "role": "graph",
+      "sha256": "2e6c98df9a837db2a4c09363fdd7acaa2fe7c8ef70aa47843753b481bfa2f61c"
+    },
+    {
+      "path": "shaders/water-ripple.program.json",
+      "role": "shaderProgram",
+      "sha256": "51107c77445fb551b4cbdd53e8f213c58f882e7fc99414dbf227cff91c7eeaed"
+    },
+    {
+      "path": "shaders/water-ripple.sksl",
+      "role": "shader",
+      "sha256": "2a6ae19c4c6ca4bc9bfd32f74a204b12544efa4cc580b33cef305036c8aec819"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "b71977732bd6fe20c34c8e03f39a05235cf504c73d28dd3c5031f04d6ad91525"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "reflectionScaleY",
+      "type": "number",
+      "label": "倒影垂直压缩比",
+      "default": 0.68,
+      "min": 0.25,
+      "max": 1.0
+    },
+    {
+      "id": "gapPx",
+      "type": "number",
+      "label": "水面基线间距",
+      "default": 6.0,
+      "min": 0.0,
+      "max": 32.0,
+      "unit": "px"
+    },
+    {
+      "id": "skewX",
+      "type": "number",
+      "label": "透视水平斜切",
+      "default": 0.14,
+      "min": -0.5,
+      "max": 0.5
+    },
+    {
+      "id": "blurSigmaPx",
+      "type": "number",
+      "label": "倒影柔化模糊半径",
+      "default": 2.4,
+      "min": 0.0,
+      "max": 12.0,
+      "unit": "px"
+    },
+    {
+      "id": "rippleAmpPx",
+      "type": "number",
+      "label": "水波基础扰动振幅",
+      "default": 5.5,
+      "min": 0.0,
+      "max": 20.0,
+      "unit": "px"
+    },
+    {
+      "id": "rippleFreq",
+      "type": "number",
+      "label": "水波空间频率",
+      "default": 1.25,
+      "min": 0.2,
+      "max": 4.0
+    },
+    {
+      "id": "reflectionOpacity",
+      "type": "number",
+      "label": "倒影基础不透明度",
+      "default": 0.58,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "waterColorMix",
+      "type": "number",
+      "label": "水面色调混合权重",
+      "default": 0.42,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "defaultWaterTint",
+      "type": "color",
+      "label": "默认水色（无媒体/透明兜底）",
+      "default": {
+        "r": 0.35,
+        "g": 0.68,
+        "b": 0.88,
+        "a": 1.0
+      }
+    }
+  ],
+  "mediaQueries": [
+    {
+      "id": "waterSurface",
+      "space": "canvasPixels",
+      "window": {
+        "kind": "literal",
+        "durationUs": 250000
+      }
+    }
+  ],
+  "exports": [
+    {
+      "id": "scene-water-reflection",
+      "kind": "controller",
+      "name": "实景水面倒影与波纹镜像",
+      "entryType": "SceneWaterReflection",
+      "parameters": [
+        "reflectionScaleY",
+        "gapPx",
+        "skewX",
+        "blurSigmaPx",
+        "rippleAmpPx",
+        "rippleFreq",
+        "reflectionOpacity",
+        "waterColorMix",
+        "defaultWaterTint"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-reflection",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ],
+      "mediaQueries": [
+        {
+          "query": "waterSurface",
+          "fallback": {
+            "pending": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-reflection"
+              ]
+            },
+            "unavailable": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-reflection"
+              ]
+            },
+            "noMedia": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-reflection"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "water-reflection",
+      "kind": "graph",
+      "name": "水面倒影波纹（行图）",
+      "graph": "graphs/water-reflection.graph.json",
+      "parameters": [
+        "blurSigmaPx"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "image.graph",
+    "media.features"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

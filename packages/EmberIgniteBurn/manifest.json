@@ -1,0 +1,177 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.ember-ignite-burn",
+  "name": "炽焰燃边与热浪碳化",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/EmberIgniteBurn.cs",
+      "role": "csharp",
+      "sha256": "e041d4dc18881724c4fe0c7bbe5c17513a09dbd0928ef4f9cb9b77508d14b363"
+    },
+    {
+      "path": "graphs/ember-burn.graph.json",
+      "role": "graph",
+      "sha256": "1e58c6275ceffbc449b0d9972e0cb64214c1571ff62ffa2f2672227b815f145d"
+    },
+    {
+      "path": "shaders/ember-burn.program.json",
+      "role": "shaderProgram",
+      "sha256": "90bb0f4904a5ae2ebfc079e300ca3cb3f05f3376bdfd25f6d6604ad04f0af5ce"
+    },
+    {
+      "path": "shaders/ember-burn.sksl",
+      "role": "shader",
+      "sha256": "52237d1b904f5fe888c41ac9f55f28afba9aae80dfd83d3d7fa8c388f81b2c9d"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "a86a6d3cc5e971a8c395de5b310c3dff81b0695592b674282faf88d5ab81a580"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "burnStyle",
+      "type": "enum",
+      "label": "燃烧质感模式",
+      "default": "moltenGold",
+      "values": [
+        {
+          "value": "moltenGold",
+          "label": "熔金流光"
+        },
+        {
+          "value": "charredEmber",
+          "label": "炭黑裂纹余烬"
+        }
+      ]
+    },
+    {
+      "id": "flameHeightPx",
+      "type": "number",
+      "label": "火舌升腾高度",
+      "default": 24.0,
+      "min": 4.0,
+      "max": 36.0,
+      "unit": "px"
+    },
+    {
+      "id": "heatDistortionPx",
+      "type": "number",
+      "label": "热浪折射扭曲幅度",
+      "default": 5.5,
+      "min": 0.0,
+      "max": 12.0,
+      "unit": "px"
+    },
+    {
+      "id": "coreColor",
+      "type": "color",
+      "label": "白炽核心焰色",
+      "default": {
+        "r": 1.0,
+        "g": 0.94,
+        "b": 0.68,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "flameColor",
+      "type": "color",
+      "label": "橘红烈焰主色",
+      "default": {
+        "r": 1.0,
+        "g": 0.34,
+        "b": 0.06,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "bloomSigmaPx",
+      "type": "number",
+      "label": "焰光扩散半径",
+      "default": 7.5,
+      "min": 0.0,
+      "max": 14.0,
+      "unit": "px"
+    },
+    {
+      "id": "fallbackBpm",
+      "type": "number",
+      "label": "无音频时备用节奏",
+      "default": 128.0,
+      "min": 0.0,
+      "max": 240.0,
+      "unit": "BPM"
+    }
+  ],
+  "exports": [
+    {
+      "id": "ember-ignite-burn",
+      "kind": "controller",
+      "name": "炽焰燃边与热浪碳化",
+      "entryType": "EmberIgniteBurn",
+      "parameters": [
+        "burnStyle",
+        "flameHeightPx",
+        "heatDistortionPx",
+        "coreColor",
+        "flameColor",
+        "bloomSigmaPx",
+        "fallbackBpm"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-ember",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "ember-burn-line",
+      "kind": "graph",
+      "name": "炽焰燃边（行图）",
+      "graph": "graphs/ember-burn.graph.json",
+      "parameters": [
+        "bloomSigmaPx"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "image.graph",
+    "line.exit"
+  ],
+  "lineExit": {
+    "durationUs": 1200000
+  },
+  "emitters": []
+}

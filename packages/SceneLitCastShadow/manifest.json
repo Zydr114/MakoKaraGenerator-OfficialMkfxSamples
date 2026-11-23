@@ -1,0 +1,199 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.scene-lit-cast-shadow",
+  "name": "实景光源感知立体投影",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/SceneLitCastShadow.cs",
+      "role": "csharp",
+      "sha256": "b5406b57cf388dc299319d9a58418195f36eee5bc18ea18d51f4050fd74d5112"
+    },
+    {
+      "path": "graphs/cast-shadow.graph.json",
+      "role": "graph",
+      "sha256": "b18e619d581dedcf85eb1ace0057b8dce7099ce058373376b67df8857f1dc0e6"
+    },
+    {
+      "path": "shaders/cast-shadow.program.json",
+      "role": "shaderProgram",
+      "sha256": "5a76d42cc56fe6f7b71eba6c34f2ea89f422411c44a07926a13915dbb4f09e56"
+    },
+    {
+      "path": "shaders/cast-shadow.sksl",
+      "role": "shader",
+      "sha256": "dc050cd19145463cd8bda49bacc368f0c2d54d5f19de43ca8f0af0ce2f08b829"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "4a1e03a09262cc22f8a8452d62d9e3776f1909fae43d6457aac1d8eff7912c26"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "maxSkew",
+      "type": "number",
+      "label": "最大投影斜切系数",
+      "default": 0.95,
+      "min": 0.0,
+      "max": 1.45
+    },
+    {
+      "id": "shadowScaleY",
+      "type": "number",
+      "label": "垂直压扁比例",
+      "default": 0.56,
+      "min": 0.3,
+      "max": 0.9
+    },
+    {
+      "id": "shadowBlurPx",
+      "type": "number",
+      "label": "半影模糊半径",
+      "default": 5.5,
+      "min": 0.0,
+      "max": 12.0,
+      "unit": "px"
+    },
+    {
+      "id": "shadowOpacity",
+      "type": "number",
+      "label": "投影不透明度",
+      "default": 0.72,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "autoColorTemp",
+      "type": "boolean",
+      "label": "主光色温互补阴影",
+      "default": true
+    },
+    {
+      "id": "defaultLightAngleDeg",
+      "type": "number",
+      "label": "无媒体默认光源角",
+      "default": -135.0,
+      "min": -180.0,
+      "max": 180.0,
+      "unit": "deg"
+    },
+    {
+      "id": "defaultShadowColor",
+      "type": "color",
+      "label": "默认投影基色",
+      "default": {
+        "r": 0.08,
+        "g": 0.1,
+        "b": 0.18,
+        "a": 1.0
+      }
+    }
+  ],
+  "mediaQueries": [
+    {
+      "id": "lightProbe",
+      "space": "canvasPixels",
+      "window": {
+        "kind": "literal",
+        "durationUs": 350000
+      }
+    }
+  ],
+  "exports": [
+    {
+      "id": "scene-lit-cast-shadow",
+      "kind": "controller",
+      "name": "实景光源感知立体投影",
+      "entryType": "SceneLitCastShadow",
+      "parameters": [
+        "maxSkew",
+        "shadowScaleY",
+        "shadowBlurPx",
+        "shadowOpacity",
+        "autoColorTemp",
+        "defaultLightAngleDeg",
+        "defaultShadowColor"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-shadow",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ],
+      "mediaQueries": [
+        {
+          "query": "lightProbe",
+          "fallback": {
+            "pending": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-shadow"
+              ]
+            },
+            "unavailable": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-shadow"
+              ]
+            },
+            "noMedia": {
+              "kind": "authorBranch",
+              "outputs": [
+                "line-shadow"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "cast-shadow-line",
+      "kind": "graph",
+      "name": "立体斜切投影（行图）",
+      "graph": "graphs/cast-shadow.graph.json",
+      "parameters": [
+        "shadowBlurPx",
+        "shadowOpacity",
+        "defaultShadowColor"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "image.graph",
+    "media.features"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

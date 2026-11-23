@@ -1,0 +1,101 @@
+{
+  "graphVersion": 1,
+  "id": "water-reflection",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    }
+  ],
+  "parameters": [
+    "blurSigmaPx"
+  ],
+  "nodes": [
+    {
+      "id": "mirror",
+      "op": "Transform",
+      "input": "input:original",
+      "matrix": [1, 0, 0, -0.68, 0, 500],
+      "outputBounds": [0, 0, 1, 1],
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 256
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "waterBlur",
+      "op": "Blur",
+      "input": "node:mirror",
+      "sigmaPx": "parameter:blurSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:blurSigmaPx)",
+        "maxExpandPx": 36,
+        "maxSampleOffsetPx": 36
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "waterRipple",
+      "op": "RuntimeShader",
+      "program": "shaders/water-ripple.program.json",
+      "children": {
+        "reflection": "node:waterBlur"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "waterlineY": 380.0,
+        "reflSpanPx": 100.0,
+        "rippleAmpPx": 5.5,
+        "rippleFreq": 1.25,
+        "reflectionOpacity": 0.58,
+        "waterColorMix": 0.42,
+        "waterTint": { "r": 0.35, "g": 0.68, "b": 0.88, "a": 1.0 }
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 24,
+        "maxExpandPx": 24,
+        "maxSampleOffsetPx": 24
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "composite",
+      "op": "Blend",
+      "foreground": "input:original",
+      "background": "node:waterRipple",
+      "mode": "sourceOver",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:composite",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 180
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

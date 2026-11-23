@@ -1,0 +1,114 @@
+uniform float timeSeconds;
+uniform float dotPitchPx;
+uniform float misalignPx;
+layout(color) uniform float4 inkColorA;
+layout(color) uniform float4 inkColorB;
+uniform float shadowOffsetPx;
+uniform float halftoneContrast;
+
+uniform shader original;
+uniform shader sung;
+uniform shader glyph;
+uniform shader popGlow;
+
+float2 rot2d(float2 v, float angleRad) {
+    float c = cos(angleRad);
+    float s = sin(angleRad);
+    return float2(c * v.x - s * v.y, s * v.x + c * v.y);
+}
+
+float halftoneDot(float2 p, float angleRad, float pitch, float2 phasePx, float radiusNorm) {
+    float safePitch = max(pitch, 2.5);
+    float2 q = rot2d(p + phasePx, angleRad) / safePitch;
+    float2 cell = fract(q) - 0.5;
+    float dist = length(cell);
+    float aa = 1.15 / safePitch;
+    return 1.0 - smoothstep(radiusNorm - aa, radiusNorm + aa, dist);
+}
+
+float4 sourceOver(float4 topPremul, float4 bottomPremul) {
+    return topPremul + bottomPremul * (1.0 - clamp(topPremul.a, 0.0, 1.0));
+}
+
+half4 main(float2 p) {
+    half4 orig = original.eval(p);
+    half4 glowSample = popGlow.eval(p);
+    float sMask = clamp(float(sung.eval(p).a), 0.0, 1.0);
+    float gMask = clamp(float(glyph.eval(p).a), 0.0, 1.0);
+
+    float pitch = clamp(dotPitchPx, 3.0, 18.0);
+    float contrast = clamp(halftoneContrast, 0.0, 1.5);
+    float mis = clamp(misalignPx, 0.0, 14.0);
+    float shOff = clamp(shadowOffsetPx, 0.0, 16.0);
+
+    // 随 timeSeconds 缓慢呼吸移相，赋予印刷网点纸生命力
+    float breathA = sin(timeSeconds * 2.2);
+    float breathB = cos(timeSeconds * 1.6);
+    float2 phase45 = float2(breathA * 1.4, breathB * 1.4);
+    float2 phase15 = float2(-breathB * 2.2, breathA * 2.0);
+
+    // 1. 底层柔和荧光底晕（仅已唱区域）
+    float glowAmt = 0.28 * contrast;
+    float3 glowTint = mix(inkColorA.rgb, inkColorB.rgb, 0.5 + 0.5 * sin(p.x * 0.018 - timeSeconds * 2.5));
+    float glowA = clamp(float(glowSample.a) * glowAmt, 0.0, 1.0);
+    float4 layerGlow = float4(glowTint * glowA, glowA);
+
+    // 2. 漫画硬边斜线投影（45° 斜线贴网阴影）
+    float2 shVec = float2(shOff, shOff * 0.85);
+    float shCov = shOff > 0.05 ? clamp(float(glyph.eval(p - shVec).a), 0.0, 1.0) : 0.0;
+    float shSung = shOff > 0.05 ? clamp(float(sung.eval(p - shVec).a), 0.0, 1.0) : 0.0;
+    float shHard = smoothstep(0.18, 0.36, shCov);
+
+    float hatchCoord = (p.x - p.y) / max(pitch * 0.72, 2.2) + timeSeconds * 0.28;
+    float hatchStripe = 1.0 - smoothstep(0.28, 0.38, abs(fract(hatchCoord) - 0.5));
+    float3 shInkUnsung = float3(0.08, 0.09, 0.14);
+    float3 shInkSung = mix(float3(0.10, 0.08, 0.18), inkColorB.rgb * 0.55, 0.48);
+    float3 shBaseCol = mix(shInkUnsung, shInkSung, shSung);
+    float shAlpha = shHard * mix(0.42, 0.86, hatchStripe);
+    float4 layerShadow = float4(shBaseCol * shAlpha, shAlpha);
+
+    // 3. 已唱部分 Risograph 双色孔版错版偏移（15° 与 75° 网角错开避免莫尔纹）
+    float2 misVec = float2(mis, -0.45 * mis);
+    float covA = mis > 0.05 ? clamp(float(sung.eval(p - misVec).a), 0.0, 1.0) : sMask;
+    float covB = mis > 0.05 ? clamp(float(sung.eval(p + misVec).a), 0.0, 1.0) : sMask;
+
+    float dotRisoA = halftoneDot(p, 0.261799, pitch * 1.05, phase15, 0.44);
+    float dotRisoB = halftoneDot(p, 1.308997, pitch * 1.05, -phase15, 0.44);
+
+    float alphaA = clamp(covA * mix(0.62, 0.95, dotRisoA) * 0.78, 0.0, 1.0);
+    float alphaB = clamp(covB * mix(0.62, 0.95, dotRisoB) * 0.78, 0.0, 1.0);
+    float4 plateA = float4(inkColorA.rgb * alphaA, alphaA);
+    float4 plateB = float4(inkColorB.rgb * alphaB, alphaB);
+    // 孔版叠印效果：双色叠加区域呈现近似正片叠底/高饱和撞色
+    float4 layerRiso = sourceOver(plateA, plateB);
+
+    // 4. 顶层原文字与 45° / 15° 半调网点矩阵调制
+    float origA = clamp(float(orig.a), 0.0, 1.0);
+    float3 origRgb = origA > 0.0001 ? clamp(float3(orig.rgb) / origA, 0.0, 1.0) : float3(0.0);
+
+    // 未唱部分：45° 细密低饱和印刷网点
+    float dot45 = halftoneDot(p, 0.785398, pitch, phase45, 0.34);
+    float unsungWeight = gMask * (1.0 - sMask);
+    float3 unsungMod = mix(origRgb, origRgb * 0.62 + float3(0.06, 0.08, 0.14), dot45 * 0.52 * contrast);
+
+    // 已唱部分：15° 放大波普网点与孔版撞色高光
+    float pulseWave = 0.06 * sin(timeSeconds * 4.2 + p.x * 0.025);
+    float dot15 = halftoneDot(p, 0.261799, pitch * 1.18, phase15, 0.40 + pulseWave);
+    float3 popInk = mix(inkColorA.rgb, inkColorB.rgb, 0.5 + 0.5 * sin(p.x * 0.02 - p.y * 0.015 - timeSeconds * 1.8));
+    float3 sungMod = mix(origRgb, mix(origRgb * 0.85, popInk, 0.72), dot15 * 0.68 * contrast);
+
+    float3 fgRgb = origRgb;
+    fgRgb = mix(fgRgb, unsungMod, unsungWeight);
+    fgRgb = mix(fgRgb, sungMod, sMask);
+    // 保持原始描边与主体边缘的干净清晰
+    float4 layerFg = float4(clamp(fgRgb, 0.0, 1.0) * origA, origA);
+
+    // 5. 由底到顶标准预乘 Alpha 合成
+    float4 outPremul = sourceOver(layerShadow, layerGlow);
+    outPremul = sourceOver(layerRiso, outPremul);
+    outPremul = sourceOver(layerFg, outPremul);
+
+    float finalA = clamp(outPremul.a, 0.0, 1.0);
+    float3 finalRgb = clamp(outPremul.rgb, float3(0.0), float3(finalA));
+    return half4(finalRgb, finalA);
+}

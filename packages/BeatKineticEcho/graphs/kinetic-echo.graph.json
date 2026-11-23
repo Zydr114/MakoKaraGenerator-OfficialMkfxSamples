@@ -1,0 +1,246 @@
+{
+  "graphVersion": 1,
+  "id": "kinetic-echo",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    },
+    {
+      "id": "sung",
+      "source": "SungCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    }
+  ],
+  "parameters": [
+    "blurSigmaPx",
+    "sungOnly"
+  ],
+  "nodes": [
+    {
+      "id": "echoSource",
+      "op": "RuntimeShader",
+      "program": "shaders/echo-gate.program.json",
+      "children": {
+        "original": "input:original",
+        "sung": "input:sung"
+      },
+      "uniforms": {
+        "sungOnly": "parameter:sungOnly"
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "echo1",
+      "op": "Transform",
+      "input": "node:echoSource",
+      "matrix": [1.06, 0, 0, 1.06, 0, 0],
+      "outputBounds": [0, 0, 1, 1],
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 256
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "echo2",
+      "op": "Transform",
+      "input": "node:echoSource",
+      "matrix": [1.13, 0, 0, 1.13, 0, 0],
+      "outputBounds": [0, 0, 1, 1],
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 256
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "echo3",
+      "op": "Transform",
+      "input": "node:echoSource",
+      "matrix": [1.22, 0, 0, 1.22, 0, 0],
+      "outputBounds": [0, 0, 1, 1],
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 256
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "blur1",
+      "op": "Blur",
+      "input": "node:echo1",
+      "sigmaPx": "parameter:blurSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:blurSigmaPx)",
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "blur2",
+      "op": "Blur",
+      "input": "node:echo2",
+      "sigmaPx": "parameter:blurSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:blurSigmaPx)",
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "blur3",
+      "op": "Blur",
+      "input": "node:echo3",
+      "sigmaPx": "parameter:blurSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:blurSigmaPx)",
+        "maxExpandPx": 48,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "tint1",
+      "op": "RuntimeShader",
+      "program": "shaders/echo-tint.program.json",
+      "children": {
+        "image": "node:blur1"
+      },
+      "uniforms": {
+        "tintColor": { "r": 0.16, "g": 0.88, "b": 1.0, "a": 1.0 },
+        "opacity": 0.72
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "tint2",
+      "op": "RuntimeShader",
+      "program": "shaders/echo-tint.program.json",
+      "children": {
+        "image": "node:blur2"
+      },
+      "uniforms": {
+        "tintColor": { "r": 0.58, "g": 0.52, "b": 1.0, "a": 1.0 },
+        "opacity": 0.55
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "tint3",
+      "op": "RuntimeShader",
+      "program": "shaders/echo-tint.program.json",
+      "children": {
+        "image": "node:blur3"
+      },
+      "uniforms": {
+        "tintColor": { "r": 1.0, "g": 0.24, "b": 0.72, "a": 1.0 },
+        "opacity": 0.40
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "add12",
+      "op": "Blend",
+      "foreground": "node:tint1",
+      "background": "node:tint2",
+      "mode": "plus",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "add123",
+      "op": "Blend",
+      "foreground": "node:tint3",
+      "background": "node:add12",
+      "mode": "plus",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "composite",
+      "op": "Blend",
+      "foreground": "input:original",
+      "background": "node:add123",
+      "mode": "sourceOver",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:composite",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 160
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

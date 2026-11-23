@@ -1,0 +1,61 @@
+{
+  "programVersion": 1,
+  "source": "shaders/ember-burn.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    {
+      "name": "timeSeconds",
+      "type": "float"
+    },
+    {
+      "name": "burnStyle",
+      "type": "int"
+    },
+    {
+      "name": "flameHeightPx",
+      "type": "float"
+    },
+    {
+      "name": "heatDistortionPx",
+      "type": "float"
+    },
+    {
+      "name": "coreColor",
+      "type": "color"
+    },
+    {
+      "name": "flameColor",
+      "type": "color"
+    },
+    {
+      "name": "flameEnergy",
+      "type": "float"
+    },
+    {
+      "name": "heatTurbulence",
+      "type": "float"
+    },
+    {
+      "name": "exitProgress",
+      "type": "float"
+    },
+    {
+      "name": "activeSpanX",
+      "type": "float4"
+    }
+  ],
+  "children": [
+    {
+      "name": "original",
+      "type": "color"
+    },
+    {
+      "name": "sung",
+      "type": "coverage"
+    },
+    {
+      "name": "bloom",
+      "type": "color"
+    }
+  ]
+}

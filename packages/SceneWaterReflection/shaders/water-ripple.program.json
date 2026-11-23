@@ -1,0 +1,18 @@
+{
+  "programVersion": 1,
+  "source": "shaders/water-ripple.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    { "name": "timeSeconds", "type": "float" },
+    { "name": "waterlineY", "type": "float" },
+    { "name": "reflSpanPx", "type": "float" },
+    { "name": "rippleAmpPx", "type": "float" },
+    { "name": "rippleFreq", "type": "float" },
+    { "name": "reflectionOpacity", "type": "float" },
+    { "name": "waterColorMix", "type": "float" },
+    { "name": "waterTint", "type": "color" }
+  ],
+  "children": [
+    { "name": "reflection", "type": "color" }
+  ]
+}

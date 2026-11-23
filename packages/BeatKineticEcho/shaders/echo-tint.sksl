@@ -1,0 +1,17 @@
+layout(color) uniform half4 tintColor;
+uniform float opacity;
+uniform shader image;
+
+half4 main(float2 p) {
+    half4 s = image.eval(p);
+    float sa = float(s.a);
+    float a = clamp(sa * clamp(opacity, 0.0, 1.0) * float(tintColor.a), 0.0, 1.0);
+    if (a <= 0.0001) {
+        return half4(0.0);
+    }
+    float3 srcRgb = sa > 0.0001 ? float3(s.rgb) / sa : float3(0.0);
+    float luma = dot(srcRgb, float3(0.299, 0.587, 0.114));
+    float3 colored = float3(tintColor.rgb) * (0.78 + 0.42 * luma);
+    float3 outRgb = clamp(colored * a, float3(0.0), float3(a));
+    return half4(outRgb, a);
+}

@@ -1,0 +1,203 @@
+uniform float timeSeconds;
+uniform int burnStyle;
+uniform float flameHeightPx;
+uniform float heatDistortionPx;
+layout(color) uniform float4 coreColor;
+layout(color) uniform float4 flameColor;
+uniform float flameEnergy;
+uniform float heatTurbulence;
+uniform float exitProgress;
+uniform float4 activeSpanX;
+
+uniform shader original;
+uniform shader sung;
+uniform shader bloom;
+
+float hash21(float2 p) {
+    float3 p3 = fract(float3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+float vnoise(float2 p) {
+    float2 i = floor(p);
+    float2 f = fract(p);
+    float2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + float2(1.0, 0.0));
+    float c = hash21(i + float2(0.0, 1.0));
+    float d = hash21(i + float2(1.0, 1.0));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(float2 p) {
+    float sum = 0.0;
+    float amp = 0.52;
+    const float2x2 rot = float2x2(0.80, -0.60, 0.60, 0.80);
+    for (int i = 0; i < 4; i++) {
+        sum += amp * vnoise(p);
+        p = rot * p * 2.03 + float2(17.1, 31.7);
+        amp *= 0.5;
+    }
+    return sum;
+}
+
+float3 straightRgb(half4 s) {
+    return s.a > 0.0001 ? clamp(float3(s.rgb) / float(s.a), 0.0, 1.0) : float3(0.0);
+}
+
+float luma(float3 c) {
+    return dot(c, float3(0.2126, 0.7152, 0.0722));
+}
+
+half4 main(float2 p) {
+    float uExit = clamp(exitProgress, 0.0, 1.0);
+    if (uExit >= 0.992) {
+        return half4(0.0);
+    }
+
+    float energy = clamp(flameEnergy, 0.0, 1.0);
+    float turb = clamp(heatTurbulence, 0.0, 1.0);
+    float fHeight = clamp(flameHeightPx, 4.0, 36.0);
+    float heatPx = clamp(heatDistortionPx, 0.0, 12.0);
+
+    // 1. 对 SungCoverage 做多向邻域梯度采样，精确提取扫字燃烧前沿
+    float s0 = clamp(float(sung.eval(p).a), 0.0, 1.0);
+    float r1 = 2.6;
+    float r2 = 5.4;
+
+    float sE = float(sung.eval(p + float2(r1, 0.0)).a);
+    float sW = float(sung.eval(p - float2(r1, 0.0)).a);
+    float sS = float(sung.eval(p + float2(0.0, r1)).a);
+    float sN = float(sung.eval(p - float2(0.0, r1)).a);
+    float sNE = float(sung.eval(p + float2(r1 * 0.707, -r1 * 0.707)).a);
+    float sNW = float(sung.eval(p + float2(-r1 * 0.707, -r1 * 0.707)).a);
+    float sSE = float(sung.eval(p + float2(r1 * 0.707, r1 * 0.707)).a);
+    float sSW = float(sung.eval(p + float2(-r1 * 0.707, r1 * 0.707)).a);
+
+    float2 gradS = float2(sE - sW, sS - sN) * 0.55
+        + float2((sNE + sSE) - (sNW + sSW), (sSE + sSW) - (sNE + sNW)) * 0.30;
+    float gradMag = clamp(length(gradS) * 1.35, 0.0, 1.0);
+
+    // 用高亮未唱填充判断区分“正在扫字的前沿”与“已唱字的深色描边外缘”
+    half4 nE = original.eval(p + float2(r2, 0.0));
+    half4 nW = original.eval(p - float2(r2, 0.0));
+    half4 nS = original.eval(p + float2(0.0, r2));
+    half4 nN = original.eval(p - float2(0.0, r2));
+    float unsungE = float(nE.a) * (1.0 - float(sung.eval(p + float2(r2, 0.0)).a)) * smoothstep(0.28, 0.58, luma(straightRgb(nE)));
+    float unsungW = float(nW.a) * (1.0 - float(sung.eval(p - float2(r2, 0.0)).a)) * smoothstep(0.28, 0.58, luma(straightRgb(nW)));
+    float unsungS = float(nS.a) * (1.0 - float(sung.eval(p + float2(0.0, r2)).a)) * smoothstep(0.28, 0.58, luma(straightRgb(nS)));
+    float unsungN = float(nN.a) * (1.0 - float(sung.eval(p - float2(0.0, r2)).a)) * smoothstep(0.28, 0.58, luma(straightRgb(nN)));
+    float unsungNear = clamp(max(max(unsungE, unsungW), max(unsungS, unsungN)), 0.0, 1.0);
+
+    float partialSweep = clamp(4.0 * s0 * (1.0 - s0), 0.0, 1.0);
+    float activeWindowBoost = 0.0;
+    if (activeSpanX.z > 0.5) {
+        float distSpan = max(max(activeSpanX.x - p.x, p.x - activeSpanX.y), 0.0);
+        activeWindowBoost = 1.0 - smoothstep(0.0, 22.0, distSpan);
+    }
+    float burnFront = clamp(
+        max(gradMag * unsungNear * 1.35, partialSweep * (0.45 + 0.75 * activeWindowBoost))
+        + 0.75 * gradMag * activeWindowBoost,
+        0.0,
+        1.0);
+
+    // 2. 热浪空气折射扭曲（随上升热羽与音频湍流波动）
+    float2 heatUv = p * 0.085 + float2(0.0, timeSeconds * 4.2);
+    float hN1 = fbm(heatUv);
+    float hN2 = fbm(heatUv + float2(23.4, 11.8));
+    float2 heatShift = float2(hN1 - 0.5, (hN2 - 0.5) * 0.7) * (heatPx * (0.45 + 0.95 * turb));
+
+    float plumeSource = max(s0, float(sung.eval(p + float2(0.0, fHeight * 0.55)).a) * 0.85);
+    float heatMask = clamp(max(burnFront, plumeSource * 0.75 + uExit * 0.8), 0.0, 1.0);
+    float2 sampleP = p + clamp(heatShift * heatMask, float2(-12.0), float2(12.0));
+
+    half4 orig = original.eval(sampleP);
+    float origA = clamp(float(orig.a), 0.0, 1.0);
+    float3 origRgb = straightRgb(orig);
+    float sDistorted = clamp(float(sung.eval(sampleP).a), 0.0, 1.0);
+
+    // 3. 退场燃尽化灰侵蚀（从外缘向内噪声燃尽）
+    float erodeMask = 1.0;
+    float exitBurnRim = 0.0;
+    if (uExit > 0.001) {
+        float o1 = float(original.eval(sampleP + float2(3.5, 0.0)).a);
+        float o2 = float(original.eval(sampleP - float2(3.5, 0.0)).a);
+        float o3 = float(original.eval(sampleP + float2(0.0, 3.5)).a);
+        float o4 = float(original.eval(sampleP - float2(0.0, 3.5)).a);
+        float interior = (origA + o1 + o2 + o3 + o4) * 0.2;
+        float burnNoise = fbm(p * 0.11 + float2(0.0, timeSeconds * 1.4));
+        float threshold = uExit * 1.24 - burnNoise * 0.36;
+        float delta = interior - threshold;
+        erodeMask = smoothstep(-0.04, 0.08, delta);
+        exitBurnRim = (1.0 - smoothstep(0.0, 0.20, abs(delta))) * step(0.02, interior);
+    }
+
+    // 4. FBM 上升火舌采样（向 +Y 向下查找火源，在字形上方升腾 16~34px 鲜明火舌）
+    float reach = clamp(fHeight * (0.72 + 0.52 * energy), 6.0, 36.0);
+    float wobble = (fbm(p * 0.095 + float2(0.0, timeSeconds * 5.2)) - 0.5) * 10.0;
+
+    float sD1 = float(sung.eval(p + float2(wobble * 0.25, reach * 0.16)).a);
+    float sD2 = float(sung.eval(p + float2(wobble * 0.50, reach * 0.36)).a);
+    float sD3 = float(sung.eval(p + float2(wobble * 0.75, reach * 0.58)).a);
+    float sD4 = float(sung.eval(p + float2(wobble * 0.95, reach * 0.80)).a);
+    float sD5 = float(sung.eval(p + float2(wobble * 1.15, reach * 1.00)).a);
+
+    float tongueAccum = sD1 * 0.38 + sD2 * 0.28 + sD3 * 0.20 + sD4 * 0.14 + sD5 * 0.10;
+    if (uExit > 0.02) {
+        float eD1 = float(original.eval(p + float2(wobble * 0.45, reach * 0.22)).a) * (1.0 - uExit);
+        float eD2 = float(original.eval(p + float2(wobble * 0.85, reach * 0.52)).a) * (1.0 - uExit);
+        float eD3 = float(original.eval(p + float2(wobble * 1.10, reach * 0.80)).a) * (1.0 - uExit);
+        tongueAccum = max(tongueAccum, (eD1 * 0.45 + eD2 * 0.35 + eD3 * 0.22) * (0.65 + 0.75 * exitBurnRim));
+    }
+
+    float flameNoise = fbm(p * float2(0.09, 0.055) + float2(0.0, timeSeconds * 5.5));
+    float flameShape = smoothstep(0.18 - 0.09 * energy, 0.64, tongueAccum * (0.55 + 0.98 * flameNoise));
+    float flameFocus = 0.82 + 0.88 * max(burnFront, activeWindowBoost);
+    float flameAlpha = clamp(flameShape * flameFocus * (0.72 + 0.38 * energy) * (1.0 - uExit * 0.82), 0.0, 1.0);
+    flameAlpha *= (1.0 - origA * erodeMask * 0.80);
+
+    float flameTemp = clamp(flameShape * 0.78 + flameNoise * 0.42 + max(burnFront, activeWindowBoost * 0.5) * 0.35, 0.0, 1.0);
+    float3 deepEmber = mix(flameColor.rgb * 0.62, float3(0.82, 0.12, 0.02), 0.45);
+    float3 tongueRgb = mix(deepEmber, flameColor.rgb, smoothstep(0.15, 0.55, flameTemp));
+    tongueRgb = mix(tongueRgb, coreColor.rgb, smoothstep(0.58, 0.94, flameTemp));
+
+    // 5. 两种已唱质感：moltenGold (0) vs charredEmber (1)
+    float veinNoise = fbm(sampleP * 0.10 + float2(-timeSeconds * 0.7, timeSeconds * 0.55));
+    float3 sungTextRgb = origRgb;
+    if (burnStyle == 0) {
+        // 熔金流光质感
+        float moltenVein = smoothstep(0.35, 0.72, veinNoise);
+        float3 goldDark = mix(flameColor.rgb * 0.88, float3(0.68, 0.32, 0.04), 0.38);
+        float3 goldHot = mix(float3(1.0, 0.76, 0.20), coreColor.rgb, 0.58 + 0.32 * energy);
+        sungTextRgb = mix(goldDark, goldHot, moltenVein);
+        sungTextRgb = mix(origRgb * 0.28 + sungTextRgb * 0.88, sungTextRgb, 0.85);
+    } else {
+        // 炭黑裂纹余烬：前沿白炽燃烧，已唱主体冷却为炭黑，内部透出暗红裂纹脉络
+        float ridge = 1.0 - abs(fbm(sampleP * 0.15 + float2(4.2, -1.9)) * 2.0 - 1.0);
+        float crack = pow(clamp(ridge, 0.0, 1.0), 2.4);
+        float3 charBase = float3(0.07, 0.055, 0.06);
+        float3 emberCrack = mix(float3(0.72, 0.08, 0.01), flameColor.rgb, crack);
+        sungTextRgb = mix(charBase, emberCrack, crack * (0.78 + 0.35 * energy));
+    }
+
+    float3 textRgb = mix(origRgb, sungTextRgb, sDistorted);
+    float rimHeat = clamp(max(burnFront * 1.15, exitBurnRim * 1.25), 0.0, 1.0);
+    float3 rimColor = mix(flameColor.rgb, coreColor.rgb, smoothstep(0.32, 0.88, rimHeat));
+    textRgb = mix(textRgb, rimColor, rimHeat * 0.90);
+
+    float textAlpha = origA * erodeMask;
+    float3 textPremul = clamp(textRgb, 0.0, 1.0) * textAlpha;
+
+    // 6. 柔和焰光 Bloom（炭黑模式下收束 Bloom 以保留碳化暗部反差）
+    half4 bloomSample = bloom.eval(p + heatShift * 0.35);
+    float bloomScale = burnStyle == 0 ? (0.48 + 0.52 * energy) : (0.24 + 0.34 * max(burnFront, energy * 0.6));
+    float bloomA = clamp(float(bloomSample.a) * bloomScale * (1.0 - uExit * 0.85), 0.0, 1.0);
+    float3 bloomTint = mix(flameColor.rgb, coreColor.rgb, burnStyle == 0 ? 0.35 * energy : 0.18);
+    float3 bloomPremul = bloomTint * bloomA * (1.0 - textAlpha * 0.55);
+    float3 flamePremul = tongueRgb * flameAlpha;
+
+    float outAlpha = clamp(textAlpha + flameAlpha * (1.0 - textAlpha) + bloomA * (1.0 - textAlpha) * (1.0 - flameAlpha), 0.0, 1.0);
+    float3 outRgb = clamp(textPremul + flamePremul + bloomPremul, float3(0.0), float3(outAlpha));
+    return half4(outRgb, outAlpha);
+}

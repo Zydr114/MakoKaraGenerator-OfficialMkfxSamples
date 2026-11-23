@@ -1,0 +1,118 @@
+{
+  "graphVersion": 1,
+  "id": "ember-burn-line",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    },
+    {
+      "id": "sung",
+      "source": "SungCoverage",
+      "type": "coverage",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": false,
+        "includeShadow": false,
+        "includeGlow": false,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fill"
+      }
+    }
+  ],
+  "parameters": [
+    "bloomSigmaPx"
+  ],
+  "nodes": [
+    {
+      "id": "sungOnly",
+      "op": "Mask",
+      "color": "input:original",
+      "coverage": "input:sung",
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "emberBloom",
+      "op": "Blur",
+      "input": "node:sungOnly",
+      "sigmaPx": "parameter:bloomSigmaPx",
+      "bounds": {
+        "expandPx": "ceil(3 * parameter:bloomSigmaPx)",
+        "maxExpandPx": 42,
+        "maxSampleOffsetPx": 42
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "emberBurn",
+      "op": "RuntimeShader",
+      "program": "shaders/ember-burn.program.json",
+      "children": {
+        "original": "input:original",
+        "sung": "input:sung",
+        "bloom": "node:emberBloom"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "burnStyle": 0,
+        "flameHeightPx": 24.0,
+        "heatDistortionPx": 5.5,
+        "coreColor": {
+          "r": 1.0,
+          "g": 0.94,
+          "b": 0.68,
+          "a": 1.0
+        },
+        "flameColor": {
+          "r": 1.0,
+          "g": 0.34,
+          "b": 0.06,
+          "a": 1.0
+        },
+        "flameEnergy": 0.55,
+        "heatTurbulence": 0.50,
+        "exitProgress": 0.0,
+        "activeSpanX": [0.0, 0.0, 0.0, 0.0]
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 44,
+        "maxExpandPx": 44,
+        "maxSampleOffsetPx": 48
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:emberBurn",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 96
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

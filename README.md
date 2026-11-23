@@ -11,8 +11,8 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 ```text
 .
 ├── .agents/skills/        # Agent 工作区 Skill（mkfx-v2-authoring）
-├── dist/                  # 10 个已打包的 .mkfx 效果包归档（可直接导入应用）
-├── packages/              # 10 个展开后的 SDK v2 示例效果包目录
+├── dist/                  # 24 个已打包的 .mkfx 效果包归档（可直接导入应用）
+├── packages/              # 24 个展开后的 SDK v2 示例效果包目录
 ├── docs/                  # SDK v2 API 完整参考与示例对照文档
 │   ├── script-sdk-v2.md
 │   └── api-sample-mapping.md
@@ -25,18 +25,32 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 
 ---
 
-## 示例效果包索引（`packages/` / `dist/`）
+## 示例效果包索引（`packages/` / `dist/`，共 24 个）
 
 | 目录 | `packageId` | 类型 | 核心特性 |
 | --- | --- | --- | --- |
+| [`packages/AcousticRippleRain`](packages/AcousticRippleRain) | `makokara.sample.acoustic-ripple-rain` | 控制器 (`controller`) | 精准踩点斜落雨丝、音频调制透视椭圆涟漪、抛物线水花飞溅与单字 `4×2` `GridWarp` 水面微震 |
+| [`packages/AdaptiveChromeFoil`](packages/AdaptiveChromeFoil) | `makokara.sample.adaptive-chrome-foil` | 控制器 + 材质 (`controller` + `material`) | `media.features` 时域平滑采样天光/地反色彩并经 `SetMaterialUniform` 注入镀铬材质（含渐变兜底） |
+| [`packages/BeatEmberStorm`](packages/BeatEmberStorm) | `makokara.sample.beat-ember-storm` | 控制器 (`controller`) | `Declare` 阶段 `Audio.GetRange` 构建变速 `RateTrack`、双事件爆发、SVG 图集热烟/火星与流光火丝 |
+| [`packages/BeatKineticEcho`](packages/BeatKineticEcho) | `makokara.sample.beat-kinetic-echo` | 控制器 + 图 (`controller` + `graph`) | 音频驱动 3 路并行 `Transform` + `Blur` + `Blend(plus)` 放射/斜切/轨道残影（支持 `sungOnly`） |
 | [`packages/BeatPulseNeon`](packages/BeatPulseNeon) | `makokara.sample.beat-pulse-neon` | 控制器 (`controller`) | 音频特征（含备用 BPM）驱动脉冲缩放、霓虹辉光与字后频谱条 |
+| [`packages/ChromaFireflyBokeh`](packages/ChromaFireflyBokeh) | `makokara.sample.chroma-firefly-bokeh` | 控制器 (`controller`) | 画布三分区背景取色自适应、`BehindText` 焦外散景 SVG 图集与 `AboveText` 萤火柔光微尾 |
+| [`packages/CyberCrtGlitch`](packages/CyberCrtGlitch) | `makokara.sample.cyber-crt-glitch` | 控制器 + 图 (`controller` + `graph`) | CRT 扫描线与 RGB 磷光格栅、音频触发块状撕裂色散与 `ExitReplica` 关机坍缩退场 |
+| [`packages/EmberIgniteBurn`](packages/EmberIgniteBurn) | `makokara.sample.ember-ignite-burn` | 控制器 + 图 (`controller` + `graph`) | `SungCoverage` 8 邻域梯度燃烧前沿、音频调制 FBM 火舌热浪、`moltenGold`/`charredEmber` 双模态与燃尽退场 |
 | [`packages/FrostedGlassMaterial`](packages/FrostedGlassMaterial) | `makokara.sample.frosted-glass` | 材质 (`material`) | 大半径高斯模糊、微米晶粒散射、缎面高光与透明渐变兜底 |
 | [`packages/HoloPrismGlow`](packages/HoloPrismGlow) | `makokara.sample.holo-prism-glow` | 图效果 (`graph`) | 整行 `SungCoverage` 遮罩提取、Bloom、RGB 棱镜色散与全息流光 |
 | [`packages/LiquidGlassMaterial`](packages/LiquidGlassMaterial) | `makokara.sample.liquid-glass` | 材质 (`material`) | 折射模糊、轮廓梯度 Fresnel 边缘、色散、流光与透明渐变兜底 |
+| [`packages/MangaHalftonePop`](packages/MangaHalftonePop) | `makokara.sample.manga-halftone-pop` | 图效果 (`graph`) | 零 C# 纯图实现 45°/15° 半调网点矩阵、Risograph 双色错版套印与硬边漫画斜线投影 |
+| [`packages/OpticalInkErosion`](packages/OpticalInkErosion) | `makokara.sample.optical-ink-erosion` | 控制器 + 图 (`controller` + `graph`) | `media.features` 2×2 Lucas-Kanade 局部光流风场、SkSL 负空间侵蚀平流与历史积分墨丝飞溅 |
 | [`packages/PetalFall`](packages/PetalFall) | `makokara.sample.petal-fall` | 控制器 (`controller`) | 行周 3D 翻转樱花雨 + `TokenStarted` 逐字惊落爆发粒子 |
+| [`packages/RefractivePrismCrystal`](packages/RefractivePrismCrystal) | `makokara.sample.refractive-prism-crystal` | 控制器 + 图 (`controller` + `graph`) | 弯月面折射、反差自适应极细描边、音节中心聚光穿透与 `ExitReplica` 亮度梯度碎化消融 |
 | [`packages/RubySplitEmphasis`](packages/RubySplitEmphasis) | `makokara.sample.ruby-split-emphasis` | 控制器 (`controller`) | 主字（`BaseOnly`）与注音单字簇（`TextClusterTarget`）分离缩放，支持 `SourceRubySegment` 定时与未分段宽度切片兜底 |
+| [`packages/SceneLitCastShadow`](packages/SceneLitCastShadow) | `makokara.sample.scene-lit-cast-shadow` | 控制器 + 图 (`controller` + `graph`) | 四象限 `media.features` 光源探针、互补冷暖阴影色推导与基线斜切压扁立体投影 |
+| [`packages/SceneWaterReflection`](packages/SceneWaterReflection) | `makokara.sample.scene-water-reflection` | 控制器 + 图 (`controller` + `graph`) | 动态基线垂直镜像 `Transform` 矩阵注入与水波 SkSL 扭曲，结合 `media.features` 水面明暗与波纹调制 |
+| [`packages/SparkleWake`](packages/SparkleWake) | `makokara.sample.sparkle-wake` | 控制器 (`controller`) | 播放头双色四角星芒尾迹、真实字形墨迹高度均匀分布与像素长度衰减控制 |
 | [`packages/StarTrail`](packages/StarTrail) | `makokara.sample.star-trail` | 控制器 (`controller`) | 播放头双层旋转 SVG 主星、连续粒子、彗星拖尾与跨行飞行衔接 |
 | [`packages/UtopiaEmphasis`](packages/UtopiaEmphasis) | `makokara.sample.utopia-emphasis` | 控制器 (`controller`) | 仿 Utopia 逐字爆发缩放、可配置衰减曲线与闪耀辉光 |
+| [`packages/WordFlipTransition`](packages/WordFlipTransition) | `makokara.sample.word-flip-transition` | 控制器 (`controller`) | 逐字三轴投影翻转出入场（含 `line.exit` 2.0s 对称翻折与左右顺序切换） |
 | [`packages/WordScatterExit`](packages/WordScatterExit) | `makokara.sample.word-scatter-exit` | 控制器 + 图 (`controller` + `graph`) | 逐字唱完旋转散落淡出、注音字簇飘散、`line.exit` 句尾续播与逐字高斯模糊（`BindGraph`） |
 | [`packages/WordSwellEmphasis`](packages/WordSwellEmphasis) | `makokara.sample.word-swell-emphasis` | 控制器 (`controller`) | 逐字平滑膨胀、上浮与唱完回落，支持连字安全判断 |
 

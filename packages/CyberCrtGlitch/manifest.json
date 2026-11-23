@@ -1,0 +1,163 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.cyber-crt-glitch",
+  "name": "赛博 CRT 荧光与故障撕裂",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/CyberCrtGlitch.cs",
+      "role": "csharp",
+      "sha256": "488b846d1824634603ebcc63b374f787dccce31c3529347bab90b83be5c9c966"
+    },
+    {
+      "path": "graphs/cyber-crt.graph.json",
+      "role": "graph",
+      "sha256": "f04f8aa2e3d4ebf2c1ddffb71df677fd8eb295b9ea302daee6c0f375c3a183a6"
+    },
+    {
+      "path": "shaders/cyber-crt.program.json",
+      "role": "shaderProgram",
+      "sha256": "741b03c235cb6385c57c5b011ceb66e3d8848c2a85ab5e963fb518d947dac5a5"
+    },
+    {
+      "path": "shaders/cyber-crt.sksl",
+      "role": "shader",
+      "sha256": "0453846fd63be398c644d9de4a8185283d86871897e0e2f673902feaeb0d2cc8"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "d489674d4f3dcd6b8c17c71978cdfe953dbe5561929715ed9e03a4ae4705cc12"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "scanlineIntensity",
+      "type": "number",
+      "label": "CRT扫描线与格栅强度",
+      "default": 0.48,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "glitchStrength",
+      "type": "number",
+      "label": "块状故障撕裂强度",
+      "default": 0.85,
+      "min": 0.0,
+      "max": 1.5
+    },
+    {
+      "id": "aberrationPx",
+      "type": "number",
+      "label": "RGB色散分离偏移",
+      "default": 4.0,
+      "min": 0.0,
+      "max": 12.0,
+      "unit": "px"
+    },
+    {
+      "id": "bloomSigmaPx",
+      "type": "number",
+      "label": "磷光余辉扩散半径",
+      "default": 8.0,
+      "min": 0.0,
+      "max": 16.0,
+      "unit": "px"
+    },
+    {
+      "id": "phosphorTint",
+      "type": "color",
+      "label": "荧光粉主色调",
+      "default": {
+        "r": 0.12,
+        "g": 0.96,
+        "b": 0.88,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "collapseExit",
+      "type": "boolean",
+      "label": "启用CRT关机坍缩退场",
+      "default": true
+    },
+    {
+      "id": "fallbackBpm",
+      "type": "number",
+      "label": "无音频时备用节奏",
+      "default": 128.0,
+      "min": 0.0,
+      "max": 240.0,
+      "unit": "BPM"
+    }
+  ],
+  "exports": [
+    {
+      "id": "cyber-crt-glitch",
+      "kind": "controller",
+      "name": "赛博 CRT 荧光与故障撕裂",
+      "entryType": "CyberCrtGlitch",
+      "parameters": [
+        "scanlineIntensity",
+        "glitchStrength",
+        "aberrationPx",
+        "bloomSigmaPx",
+        "phosphorTint",
+        "collapseExit",
+        "fallbackBpm"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-crt",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    },
+    {
+      "id": "cyber-crt-line",
+      "kind": "graph",
+      "name": "赛博 CRT 荧光（行图）",
+      "graph": "graphs/cyber-crt.graph.json",
+      "parameters": [
+        "bloomSigmaPx"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "image.graph",
+    "line.exit"
+  ],
+  "lineExit": {
+    "durationUs": 600000
+  },
+  "emitters": []
+}

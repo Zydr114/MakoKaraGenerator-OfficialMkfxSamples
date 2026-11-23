@@ -1,0 +1,128 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.manga-halftone-pop",
+  "name": "漫画网点与孔版错印",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "graphs/manga-halftone.graph.json",
+      "role": "graph",
+      "sha256": "0e1f1405d65df72679114f6899a43a2716e1797b05d5c7d003592aed068eef2f"
+    },
+    {
+      "path": "shaders/manga-halftone.program.json",
+      "role": "shaderProgram",
+      "sha256": "0699b07aa5e6525939eb1d089f43f6aeea8d8688cc964d8cc8c157f2243b70e9"
+    },
+    {
+      "path": "shaders/manga-halftone.sksl",
+      "role": "shader",
+      "sha256": "39acdf6ba72087a786f3d1e8a1a6fe6963aa2e586accb7d7d0b60699288a5ecb"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "b2346eb342758b05e866400f6955d5a3f33d08d24298013fe5d31d6cba0d5c58"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "dotPitchPx",
+      "type": "number",
+      "label": "网点矩阵间距",
+      "default": 7.0,
+      "min": 3.0,
+      "max": 18.0,
+      "unit": "px"
+    },
+    {
+      "id": "misalignPx",
+      "type": "number",
+      "label": "孔版错印偏移",
+      "default": 4.5,
+      "min": 0.0,
+      "max": 14.0,
+      "unit": "px"
+    },
+    {
+      "id": "inkColorA",
+      "type": "color",
+      "label": "孔版主油墨色A",
+      "default": {
+        "r": 0.04,
+        "g": 0.82,
+        "b": 0.96,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "inkColorB",
+      "type": "color",
+      "label": "孔版辅油墨色B",
+      "default": {
+        "r": 0.98,
+        "g": 0.16,
+        "b": 0.56,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "shadowOffsetPx",
+      "type": "number",
+      "label": "漫画硬边投影偏移",
+      "default": 6.0,
+      "min": 0.0,
+      "max": 16.0,
+      "unit": "px"
+    },
+    {
+      "id": "halftoneContrast",
+      "type": "number",
+      "label": "网点对比度增益",
+      "default": 0.75,
+      "min": 0.0,
+      "max": 1.5
+    }
+  ],
+  "exports": [
+    {
+      "id": "manga-halftone-pop",
+      "kind": "graph",
+      "name": "漫画网点与孔版错印",
+      "graph": "graphs/manga-halftone.graph.json",
+      "parameters": [
+        "dotPitchPx",
+        "misalignPx",
+        "inkColorA",
+        "inkColorB",
+        "shadowOffsetPx",
+        "halftoneContrast"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "line-color",
+          "kind": "ImageGraph",
+          "target": "line",
+          "requires": [],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "image.graph"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

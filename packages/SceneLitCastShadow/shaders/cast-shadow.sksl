@@ -1,0 +1,25 @@
+layout(color) uniform float4 uShadowColor;
+uniform float uOpacity;
+uniform float4 uLineGeo;
+uniform shader castShadow;
+
+half4 main(float2 p) {
+    half4 s = castShadow.eval(p);
+    float a = clamp(float(s.a), 0.0, 1.0);
+    if (a <= 0.0005) {
+        return half4(0.0);
+    }
+
+    float baselineY = uLineGeo.x;
+    float shadowSpan = max(16.0, uLineGeo.y);
+    float distFromBase = abs(p.y - baselineY);
+    float t = clamp(distFromBase / shadowSpan, 0.0, 1.0);
+
+    // 靠近基线接地处阴影最凝实，向投影末端柔和渐隐
+    float distFade = mix(1.0, 0.34, smoothstep(0.08, 1.0, t));
+    float contrastGain = clamp(uLineGeo.w, 0.2, 1.2);
+    float outA = clamp(a * clamp(uOpacity, 0.0, 1.0) * contrastGain * distFade, 0.0, 1.0);
+
+    float3 rgb = clamp(uShadowColor.rgb, 0.0, 1.0);
+    return half4(rgb * outA, outA);
+}

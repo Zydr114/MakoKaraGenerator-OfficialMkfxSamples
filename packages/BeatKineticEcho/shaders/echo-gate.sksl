@@ -1,0 +1,14 @@
+uniform int sungOnly;
+uniform shader original;
+uniform shader sung;
+
+half4 main(float2 p) {
+    half4 c = original.eval(p);
+    if (sungOnly == 0) {
+        return c;
+    }
+    float mask = smoothstep(0.02, 0.30, clamp(float(sung.eval(p).a), 0.0, 1.0));
+    float outAlpha = clamp(float(c.a) * mask, 0.0, 1.0);
+    float3 outRgb = clamp(float3(c.rgb) * mask, float3(0.0), float3(outAlpha));
+    return half4(outRgb, outAlpha);
+}

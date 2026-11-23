@@ -1,0 +1,242 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.adaptive-chrome-foil",
+  "name": "环境光自适应液态镀铬",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/AdaptiveChromeFoil.cs",
+      "role": "csharp",
+      "sha256": "c15664fc5d795b40de4a9df54816d05601bb6dae9b981bb1ffb5274a84d1a83d"
+    },
+    {
+      "path": "graphs/chrome-foil.graph.json",
+      "role": "graph",
+      "sha256": "21eab6932a0111b15eafed6ef4cb23722d8f2b538a66a3bb217a59bd432b6e5d"
+    },
+    {
+      "path": "shaders/chrome-foil.program.json",
+      "role": "shaderProgram",
+      "sha256": "9d3f79e276915cf38967b90c23efc3f9fdaf970794e806e856fbcebdb0ebff5a"
+    },
+    {
+      "path": "shaders/chrome-foil.sksl",
+      "role": "shader",
+      "sha256": "541955b44eaf13649eb5d68139502d7efad5ae7e5cac82bfa391e14fe8dcb8e7"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "8a3617bb2d6969e1d4b00fef4fa029672edc71d67fa960d50cc5c6c20f0b9cb1"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "envSmoothUs",
+      "type": "duration",
+      "label": "环境采样平滑窗口",
+      "default": 300000,
+      "min": 0,
+      "max": 2000000,
+      "unit": "us"
+    },
+    {
+      "id": "liquidWarp",
+      "type": "number",
+      "label": "液态铬波纹强度",
+      "default": 0.75,
+      "min": 0.0,
+      "max": 2.0
+    },
+    {
+      "id": "metallicContrast",
+      "type": "number",
+      "label": "金属反差锐度",
+      "default": 1.18,
+      "min": 0.4,
+      "max": 2.0
+    },
+    {
+      "id": "sheenSpeed",
+      "type": "number",
+      "label": "流光扫掠速度",
+      "default": 1.2,
+      "min": 0.0,
+      "max": 4.0
+    },
+    {
+      "id": "envBlend",
+      "type": "number",
+      "label": "背景环境色混合权重",
+      "default": 0.85,
+      "min": 0.0,
+      "max": 1.0
+    },
+    {
+      "id": "fallbackSkyColor",
+      "type": "color",
+      "label": "备用天光反射色",
+      "default": {
+        "r": 0.48,
+        "g": 0.78,
+        "b": 0.98,
+        "a": 1.0
+      }
+    },
+    {
+      "id": "fallbackGroundColor",
+      "type": "color",
+      "label": "备用地面反光色",
+      "default": {
+        "r": 0.96,
+        "g": 0.62,
+        "b": 0.34,
+        "a": 1.0
+      }
+    }
+  ],
+  "mediaQueries": [
+    {
+      "id": "env",
+      "space": "canvasPixels",
+      "window": {
+        "kind": "parameter",
+        "parameter": "envSmoothUs"
+      }
+    }
+  ],
+  "exports": [
+    {
+      "id": "adaptive-chrome-foil",
+      "kind": "controller",
+      "name": "环境光自适应液态镀铬",
+      "entryType": "AdaptiveChromeFoil",
+      "parameters": [
+        "envSmoothUs",
+        "liquidWarp",
+        "metallicContrast",
+        "sheenSpeed",
+        "envBlend",
+        "fallbackSkyColor",
+        "fallbackGroundColor"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "chrome-style",
+          "kind": "StyleModulation",
+          "target": "tokenFamily",
+          "requires": [],
+          "dependsOn": []
+        }
+      ],
+      "mediaQueries": [
+        {
+          "query": "env",
+          "fallback": {
+            "pending": {
+              "kind": "authorBranch",
+              "outputs": [
+                "chrome-style"
+              ]
+            },
+            "unavailable": {
+              "kind": "authorBranch",
+              "outputs": [
+                "chrome-style"
+              ]
+            },
+            "noMedia": {
+              "kind": "authorBranch",
+              "outputs": [
+                "chrome-style"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "chrome-material",
+      "kind": "material",
+      "name": "液态镀铬材质",
+      "graph": "graphs/chrome-foil.graph.json",
+      "parameters": [
+        "liquidWarp",
+        "metallicContrast",
+        "sheenSpeed",
+        "fallbackSkyColor",
+        "fallbackGroundColor"
+      ],
+      "regions": [
+        "fill",
+        "stroke"
+      ],
+      "coverageMode": "masked",
+      "fallback": {
+        "kind": "gradient",
+        "gradient": {
+          "kind": "Linear",
+          "angleDegrees": 90,
+          "centerX": 0.5,
+          "centerY": 0.5,
+          "radiusX": 0.5,
+          "radiusY": 0.5,
+          "coordinateSpace": "Line",
+          "colorSpace": "LinearRgb",
+          "huePath": "Shorter",
+          "stops": [
+            {
+              "offset": 0,
+              "color": "#EEF6FFFF"
+            },
+            {
+              "offset": 0.45,
+              "color": "#7EB8F2FF"
+            },
+            {
+              "offset": 0.52,
+              "color": "#202A3AFF"
+            },
+            {
+              "offset": 1,
+              "color": "#F5A05AFF"
+            }
+          ]
+        }
+      },
+      "outputs": [
+        {
+          "id": "color",
+          "kind": "ImageGraph",
+          "target": "region",
+          "requires": [],
+          "dependsOn": [],
+          "bypass": {
+            "kind": "materialFallback",
+            "mapping": "identity"
+          }
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "style.fill",
+    "style.stroke",
+    "material.uniform",
+    "media.features"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

@@ -1,0 +1,12 @@
+{
+  "programVersion": 1,
+  "source": "shaders/echo-gate.sksl",
+  "profile": "skia-raster-3.119.4-v1",
+  "uniforms": [
+    { "name": "sungOnly", "type": "int" }
+  ],
+  "children": [
+    { "name": "original", "type": "color" },
+    { "name": "sung", "type": "coverage" }
+  ]
+}

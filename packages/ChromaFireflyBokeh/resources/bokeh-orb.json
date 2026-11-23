@@ -1,0 +1,34 @@
+{
+  "svgResourceVersion": 1,
+  "id": "bokeh-orb",
+  "source": "assets/bokeh-orb.svg",
+  "profile": "mako-svg-static-1",
+  "mode": "atlas",
+  "viewport": {
+    "width": 160,
+    "height": 160
+  },
+  "fonts": [],
+  "images": [],
+  "atlas": {
+    "variants": [
+      {
+        "id": "small",
+        "width": 64,
+        "height": 64
+      },
+      {
+        "id": "medium",
+        "width": 128,
+        "height": 128
+      },
+      {
+        "id": "large",
+        "width": 256,
+        "height": 256
+      }
+    ],
+    "paddingPx": 4,
+    "mipmaps": true
+  }
+}

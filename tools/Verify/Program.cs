@@ -52,7 +52,6 @@ using var videos = new FfmpegVideoFrameProvider();
 var factory = new ProjectRenderSessionFactory(
     compiler,
     videos,
-    ReplayReason.Initial,
     renderBackend: options.Backend);
 
 int failures = 0;
@@ -275,7 +274,6 @@ internal static class Fixture
             : new ProjectRenderSessionFactory(
                 compiler,
                 videos,
-                ReplayReason.Initial,
                 renderBackend: backend,
                 mediaBinding: media.Binding);
 

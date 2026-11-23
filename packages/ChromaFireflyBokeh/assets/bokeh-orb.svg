@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <defs>
+    <radialGradient id="bokehDisc" gradientUnits="objectBoundingBox" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
+      <stop offset="0.58" stop-color="#ffffff" stop-opacity="0.34"/>
+      <stop offset="0.80" stop-color="#ffffff" stop-opacity="0.72"/>
+      <stop offset="0.90" stop-color="#ffffff" stop-opacity="0.46"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bokehCore" gradientUnits="objectBoundingBox" cx="0.44" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.65"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="80" cy="80" r="70" fill="url(#bokehDisc)"/>
+  <circle cx="72" cy="70" r="46" fill="url(#bokehCore)"/>
+  <circle cx="80" cy="80" r="59" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="2.2"/>
+</svg>

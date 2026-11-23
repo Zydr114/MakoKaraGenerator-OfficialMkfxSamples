@@ -1,0 +1,278 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.beat-ember-storm",
+  "name": "重低音炽焰余烬风暴",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/BeatEmberStorm.cs",
+      "role": "csharp",
+      "sha256": "e39a25d2ff83f4553a1d1e844e7f0b3d559c0f0eb61dc585bf33b2bc7491163b"
+    },
+    {
+      "path": "assets/ember-shard.svg",
+      "role": "svg",
+      "sha256": "11a62a47dcacac79d4c00f59de50913010bb810ca067bb510858fdfcc9d5bdb8"
+    },
+    {
+      "path": "resources/ember-shard.json",
+      "role": "svgResource",
+      "sha256": "f3ed324466b707067fcb64b58d13e3f6e9f9bcd062010d46396121f94d77d578"
+    },
+    {
+      "path": "assets/smoke-puff.svg",
+      "role": "svg",
+      "sha256": "4298003ca795003301db36674468b18e9ae6e5d9ea90bffd9bf5e21c12291d4b"
+    },
+    {
+      "path": "resources/smoke-puff.json",
+      "role": "svgResource",
+      "sha256": "efc6584b6a6413813076f854a7851ff6600b9e4f81e23899eae54446d88b385f"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "a182b7c17e3884999877a2da725ae12c66f1c7802e9aaa2c2d0f75668051dfc0"
+    }
+  ],
+  "parameters": [
+    {
+      "id": "baseRate",
+      "type": "number",
+      "label": "基础余烬发射速率",
+      "default": 28,
+      "min": 2,
+      "max": 100,
+      "unit": "/s"
+    },
+    {
+      "id": "bassBoostMultiplier",
+      "type": "number",
+      "label": "重低音速率倍率",
+      "default": 3.2,
+      "min": 0,
+      "max": 8,
+      "unit": "倍"
+    },
+    {
+      "id": "burstMaxCount",
+      "type": "integer",
+      "label": "鼓点音节最大爆发火星数",
+      "default": 18,
+      "min": 0,
+      "max": 32
+    },
+    {
+      "id": "updraftPxPerSec",
+      "type": "number",
+      "label": "热浪上升速度",
+      "default": 135,
+      "min": 20,
+      "max": 360,
+      "unit": "px/s"
+    },
+    {
+      "id": "turbulencePx",
+      "type": "number",
+      "label": "热气流涡旋扰动",
+      "default": 28,
+      "min": 0,
+      "max": 100,
+      "unit": "px"
+    },
+    {
+      "id": "emberSizePx",
+      "type": "number",
+      "label": "火星基础尺寸",
+      "default": 22,
+      "min": 4,
+      "max": 48,
+      "unit": "px"
+    },
+    {
+      "id": "trailUs",
+      "type": "duration",
+      "label": "流光火丝拖尾时长",
+      "default": 380000,
+      "min": 0,
+      "max": 1200000,
+      "unit": "us"
+    },
+    {
+      "id": "lifeUs",
+      "type": "duration",
+      "label": "余烬存活时长",
+      "default": 1400000,
+      "min": 300000,
+      "max": 3500000,
+      "unit": "us"
+    },
+    {
+      "id": "hotColor",
+      "type": "color",
+      "label": "白炽核心色",
+      "default": {
+        "r": 1,
+        "g": 0.94,
+        "b": 0.62,
+        "a": 1
+      }
+    },
+    {
+      "id": "emberColor",
+      "type": "color",
+      "label": "炽焰橘红色",
+      "default": {
+        "r": 1,
+        "g": 0.36,
+        "b": 0.08,
+        "a": 0.95
+      }
+    },
+    {
+      "id": "smokeColor",
+      "type": "color",
+      "label": "余烟暗火色",
+      "default": {
+        "r": 0.42,
+        "g": 0.16,
+        "b": 0.08,
+        "a": 0.46
+      }
+    },
+    {
+      "id": "bridgeLines",
+      "type": "boolean",
+      "label": "跨行火星滑行衔接",
+      "default": true
+    },
+    {
+      "id": "fallbackBpm",
+      "type": "number",
+      "label": "无音频分析时备用BPM",
+      "default": 124,
+      "min": 0,
+      "max": 240,
+      "unit": "BPM"
+    }
+  ],
+  "exports": [
+    {
+      "id": "beat-ember-storm",
+      "kind": "controller",
+      "name": "重低音炽焰余烬风暴",
+      "entryType": "BeatEmberStorm",
+      "parameters": [
+        "baseRate",
+        "bassBoostMultiplier",
+        "burstMaxCount",
+        "updraftPxPerSec",
+        "turbulencePx",
+        "emberSizePx",
+        "trailUs",
+        "lifeUs",
+        "hotColor",
+        "emberColor",
+        "smokeColor",
+        "bridgeLines",
+        "fallbackBpm"
+      ],
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "outputs": [
+        {
+          "id": "cursor-embers",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "particles.continuous"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "token-burst",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "particles.burst"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "tail-burst",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "particles.burst"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "smoke",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.sprites",
+            "resources.svg.atlas"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "trails",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.trails"
+          ],
+          "dependsOn": []
+        },
+        {
+          "id": "embers",
+          "kind": "Overlay",
+          "target": "canvas",
+          "requires": [
+            "visuals.sprites",
+            "resources.svg.atlas"
+          ],
+          "dependsOn": []
+        }
+      ]
+    }
+  ],
+  "requires": [
+    "particles.continuous",
+    "particles.burst",
+    "visuals.sprites",
+    "visuals.trails",
+    "resources.svg.atlas",
+    "timeline.index"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": [
+    {
+      "id": "cursor-embers",
+      "kind": "cursor",
+      "maxLifetimeUs": 5000000
+    },
+    {
+      "id": "token-burst",
+      "kind": "burst",
+      "maxLifetimeUs": 5000000
+    },
+    {
+      "id": "tail-burst",
+      "kind": "burst",
+      "maxLifetimeUs": 5000000
+    }
+  ]
+}
