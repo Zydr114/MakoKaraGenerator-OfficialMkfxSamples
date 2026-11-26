@@ -1,5 +1,8 @@
 # MakoKaraGenerator-OfficialMkfxSamples
 
+> [!WARNING]
+> 本仓库目前仍处于积极开发阶段，仓库内的 `.mkfx` 示例包、参数接口与实现细节可能随时调整或发生破坏性变更，**请勿将其当作稳定版效果包直接用于正式生产环境**。
+
 MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `packageVersion: 3`）。
 
 仓库同时提供各效果包的**展开目录源码与资源**（`packages/`）以及对应的**预打包 `.mkfx` 归档**（`dist/`），并提供 SDK v2 API 对照文档、清单摘要校验/本地打包脚本，以及直接对接 `MakoKaraGenerator-App` 后端的 Vulkan GPU 真机渲染验证工具。
