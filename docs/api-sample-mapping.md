@@ -1,10 +1,10 @@
 # SDK v2 API 与示例包对照索引
 
-本文档将 [SDK v2 完整 API 参考](script-sdk-v2.md) 中的核心能力、清单字段、C# 入口与纯资源图/着色器写法，逐一映射到 [`packages/`](../packages/) 下的 27 个官方示例包，方便按 API 查用法或按示例查规范。
+本文档将 [SDK v2 完整 API 参考](script-sdk-v2.md) 中的核心能力、清单字段、C# 入口与纯资源图/着色器写法，逐一映射到 [`packages/`](../packages/) 下的 28 个官方示例包，方便按 API 查用法或按示例查规范。
 
 ---
 
-## 1. 二十七个示例包总览
+## 1. 二十八个示例包总览
 
 | 目录 | `packageId` | 导出种类与目标 | 声明能力（`requires`） | 核心示范点 |
 | --- | --- | --- | --- | --- |
@@ -15,6 +15,7 @@
 | [`BeatPulseNeon`](../packages/BeatPulseNeon) | `makokara.sample.beat-pulse-neon` | `controller` → `tokenFamily` + `canvas` | `token.affine`、`style.glow`、`visuals.segments` | `AudioFeatures`（含备用 BPM 退化）、`OverlayLayer.BehindText` 线段频谱条、`integer` 参数 |
 | [`ChromaFireflyBokeh`](../packages/ChromaFireflyBokeh) | `makokara.sample.chroma-firefly-bokeh` | `controller` → `canvas` (`Overlay`) | `particles.continuous`、`particles.burst`、`media.features`、`visuals.sprites`、`visuals.dots`、`visuals.trails`、`resources.svg.atlas`、`timeline.index` | 400ms 平滑窗口画布三分区背景取色自适应、`BehindText` 焦外散景 SVG 图集 `DrawAtlasSprites` 与 `AboveText` 萤火 `DrawTrails` + `DrawDots` |
 | [`CyberCrtGlitch`](../packages/CyberCrtGlitch) | `makokara.sample.cyber-crt-glitch` | `controller` + `graph` → `line` | `image.graph`、`line.exit` | CRT 扫描线/RGB 磷光格栅、`AudioFeatures` 触发块状撕裂色散与 `ExitReplica` 关机电子束坍缩退场 |
+| [`DirectionalFadeTransition`](../packages/DirectionalFadeTransition) | `makokara.sample.directional-fade-transition` | `controller` → `tokenFamily` | `token.affine`、`token.opacity`、`line.exit` | 零分配简洁整行方向淡入淡出，支持独立配置入场/出场滑动方向（原地/左/右/上/下）、距离与缓动曲线 |
 | [`EmberIgniteBurn`](../packages/EmberIgniteBurn) | `makokara.sample.ember-ignite-burn` | `controller` + `graph` → `line` | `image.graph`、`line.exit` | `SungCoverage` 8 邻域方向梯度燃边、音频调制 FBM 火舌热浪、`moltenGold`/`charredEmber` 双质感与燃尽化灰退场 |
 | [`FrostedGlassMaterial`](../packages/FrostedGlassMaterial) | `makokara.sample.frosted-glass` | `material` → `region` (`fill`, `stroke`) | `[]` | 大半径 Blur（`ceil(3 * parameter:blurPx)`）+ 晶粒散射 SkSL、缎面高光、渐变 `fallback` |
 | [`HoloPrismGlow`](../packages/HoloPrismGlow) | `makokara.sample.holo-prism-glow` | `graph` → `line` | `image.graph` | 整行 `TargetColor` + `SungCoverage` 遮罩、`Mask` → `Blur` → `RuntimeShader` 三节点 DAG、RGB 色散与虹彩 SkSL |
@@ -44,7 +45,7 @@
 
 ### 2.1 清单根合同
 
-除 `WordFlipTransition`（`2000000`）、`OpticalInkErosion`（`1800000`）、`WindParticleTransition`（`1800000`）、`WordScatterExit`（`1500000`）、`EmberIgniteBurn`（`1200000`）、`RefractivePrismCrystal`（`900000`）与 `CyberCrtGlitch`（`600000`）声明非零 `"lineExit": {"durationUs": ...}` 与 `"line.exit"` 能力外，其余 20 个包均为零行退场；所有包均遵循 SDK v2 包格式 3 固定头部：
+除 `WordFlipTransition`（`2000000`）、`OpticalInkErosion`（`1800000`）、`WindParticleTransition`（`1800000`）、`DirectionalFadeTransition`（`1500000`）、`WordScatterExit`（`1500000`）、`EmberIgniteBurn`（`1200000`）、`RefractivePrismCrystal`（`900000`）与 `CyberCrtGlitch`（`600000`）声明非零 `"lineExit": {"durationUs": ...}` 与 `"line.exit"` 能力外，其余 20 个包均为零行退场；所有包均遵循 SDK v2 包格式 3 固定头部：
 
 - `"packageVersion": 3`
 - `"sdkVersion": "2.0.0"`
@@ -56,8 +57,8 @@
 
 | `role` | 含义 | 本仓库实际示例 |
 | --- | --- | --- |
-| `csharp` | C# 14 控制器源码 | 除纯图/纯材质包（`FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial`、`MangaHalftonePop`）外的 23 个控制器/混合包各自的 `src/*.cs` |
-| `asset` | 随包分发的 `README.md` 等一般文件 | 全部 27 个包的 `README.md` |
+| `csharp` | C# 14 控制器源码 | 除纯图/纯材质包（`FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial`、`MangaHalftonePop`）外的 24 个控制器/混合包各自的 `src/*.cs` |
+| `asset` | 随包分发的 `README.md` 等一般文件 | 全部 28 个包的 `README.md` |
 | `svg` | 静态 SVG 源文件 | `BeatEmberStorm`、`ChromaFireflyBokeh`、`NoteBurst`、`PetalFall`、`SparkleWake`、`StarTrail`、`WindParticleTransition` 各自的 `assets/*.svg` |
 | `svgResource` | SVG 使用描述 JSON（`mako-svg-static-1` 矢量或 `mode: "atlas"` 图集） | 矢量：`NoteBurst`、`PetalFall`、`SparkleWake`、`StarTrail`；图集：`BeatEmberStorm`、`ChromaFireflyBokeh`、`WindParticleTransition` 各自的 `resources/*.json` |
 | `graph` | 图像图定义 JSON（`graphVersion: 1`） | `AdaptiveChromeFoil`、`BeatKineticEcho`、`CyberCrtGlitch`、`EmberIgniteBurn`、`FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial`、`MangaHalftonePop`、`OpticalInkErosion`、`RefractivePrismCrystal`、`SceneLitCastShadow`、`SceneWaterReflection`、`WindParticleTransition`、`WordScatterExit` 各自的 `graphs/*.graph.json` |
@@ -70,7 +71,7 @@
 
 | 清单 `type` | C# 读取方法 | 示例包位置 |
 | --- | --- | --- |
-| `number` | `GetNumber(id)` → `double` | 全部 27 个包均广泛使用（控制器读取或图/着色器参数绑定） |
+| `number` | `GetNumber(id)` → `double` | 全部 28 个包均广泛使用（控制器读取或图/着色器参数绑定） |
 | `integer` | `GetInteger(id)` → `long` | `AcousticRippleRain`（`rippleRings`、`splashCount`）、`BeatEmberStorm`（`burstMaxCount`）、`BeatPulseNeon`（`barCount`）、`ChromaFireflyBokeh`（`bokehBurstCount`）、`PetalFall`（`lineDensity`、`burstCount`） |
 | `duration` | `GetDuration(id)` → `long`（微秒） | `AcousticRippleRain`、`AdaptiveChromeFoil`（`envSmoothUs` 驱动 `mediaQueries` 窗口）、`BeatEmberStorm`、`ChromaFireflyBokeh`、`OpticalInkErosion`、`PetalFall`、`RefractivePrismCrystal`、`RubySplitEmphasis`、`SparkleWake`、`StarTrail`、`UtopiaEmphasis`、`WordFlipTransition`、`WordScatterExit`、`WordSwellEmphasis` |
 | `boolean` | `GetBoolean(id)` → `bool` | `AcousticRippleRain`、`BeatEmberStorm`、`BeatKineticEcho`、`BeatPulseNeon`、`ChromaFireflyBokeh`、`CyberCrtGlitch`、`RubySplitEmphasis`、`SceneLitCastShadow`、`UtopiaEmphasis`、`WordFlipTransition`、`WordScatterExit` |
@@ -142,9 +143,9 @@
 
 ---
 
-## 5. 主文档中尚未在本批 27 例演示的进阶能力
+## 5. 主文档中尚未在本批 28 例演示的进阶能力
 
-本仓库 27 个示例包已覆盖绝大部分 SDK v2 能力；如需查阅少数尚未收录的高阶特性，可直接定位到 [script-sdk-v2.md](script-sdk-v2.md) 对应章节与主仓库参考包：
+本仓库 28 个示例包已覆盖绝大部分 SDK v2 能力；如需查阅少数尚未收录的高阶特性，可直接定位到 [script-sdk-v2.md](script-sdk-v2.md) 对应章节与主仓库参考包：
 
 - **PNG 位图精灵（`DrawSprites`、`Sprite`）**：见 [script-sdk-v2.md §14.2 图元与方法](script-sdk-v2.md#142-图元与方法)（主仓库对照：`SpriteTrail`；SVG 图集 `mode: "atlas"` + `DrawAtlasSprites` 已有 `BeatEmberStorm`、`ChromaFireflyBokeh`、`WindParticleTransition` 演示）。
 - **独立标点/分组目标（`TextMarkTarget`、`TextTarget.Group`）**：见 [script-sdk-v2.md §7.3 行、标记和组](script-sdk-v2.md#73-行标记和组) 与 [§8.1 选择目标](script-sdk-v2.md#81-选择目标)。

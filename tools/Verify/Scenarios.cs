@@ -29,6 +29,7 @@ internal static class Scenarios
     private static readonly long[] RepeatTimes = [2_620_000, 8_600_000, 14_600_000, 16_600_000];
     private static readonly long[] RepeatChorusTimes = [2_600_000, 5_600_000, 8_600_000, 11_600_000, 14_600_000];
     private static readonly long[] NoteBurstTimes = [2_120_000, 2_620_000, 3_180_000, 4_650_000, 6_150_000];
+    private static readonly long[] FadeTransitionTimes = [2_120_000, 2_260_000, 3_250_000, 5_140_000, 5_260_000, 6_400_000];
 
     internal static IReadOnlyList<Scenario> All { get; } =
     [
@@ -279,6 +280,18 @@ internal static class Scenarios
             (project, package) => WithInstance(project, package, "note-burst",
                 """{"layer":"behind","burstCount":7,"noteSizePx":32}"""),
             NoteBurstTimes),
+
+        new("DirectionalFadeTransition", "default",
+            (project, package) => WithInstance(project, package, "directional-fade-transition"),
+            FadeTransitionTimes),
+        new("DirectionalFadeTransition", "horizontal",
+            (project, package) => WithInstance(project, package, "directional-fade-transition",
+                """{"enterDirection":"fromLeft","exitDirection":"toRight","enterDistancePx":64,"exitDistancePx":64}"""),
+            FadeTransitionTimes),
+        new("DirectionalFadeTransition", "in-place-with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "directional-fade-transition",
+                """{"enterDirection":"none","exitDirection":"none"}"""),
+            FadeTransitionTimes),
     ];
 
     internal static ProjectAudioAnalysis CreateSyntheticAudioAnalysis(long durationUs)

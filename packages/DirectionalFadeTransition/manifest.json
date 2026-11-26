@@ -1,0 +1,183 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.directional-fade-transition",
+  "name": "方向淡入淡出",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/DirectionalFadeTransition.cs",
+      "role": "csharp",
+      "sha256": "7b5f999920603be0ee16ef9a55c890de5478b85eff95ff949c78a8a66573a20b"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "dbb97d4df219463fc3b1c19956c8fcfe7b4ea1af999b440a7d4fb1954549e729"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 360000,
+      "id": "enterDurationUs",
+      "label": "淡入时长",
+      "max": 1500000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": "fromBottom",
+      "id": "enterDirection",
+      "label": "淡入方向",
+      "type": "enum",
+      "values": [
+        {
+          "label": "原地淡入",
+          "value": "none"
+        },
+        {
+          "label": "从左滑入",
+          "value": "fromLeft"
+        },
+        {
+          "label": "从右滑入",
+          "value": "fromRight"
+        },
+        {
+          "label": "从上滑入",
+          "value": "fromTop"
+        },
+        {
+          "label": "从下滑入",
+          "value": "fromBottom"
+        }
+      ]
+    },
+    {
+      "default": 32,
+      "id": "enterDistancePx",
+      "label": "淡入滑动距离",
+      "max": 240,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": {
+        "easing": "easeOut",
+        "kind": "easing"
+      },
+      "id": "enterCurve",
+      "label": "淡入曲线",
+      "type": "curve"
+    },
+    {
+      "default": 360000,
+      "id": "exitDurationUs",
+      "label": "淡出时长",
+      "max": 1500000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": "toTop",
+      "id": "exitDirection",
+      "label": "淡出方向",
+      "type": "enum",
+      "values": [
+        {
+          "label": "原地淡出",
+          "value": "none"
+        },
+        {
+          "label": "向左滑出",
+          "value": "toLeft"
+        },
+        {
+          "label": "向右滑出",
+          "value": "toRight"
+        },
+        {
+          "label": "向上滑出",
+          "value": "toTop"
+        },
+        {
+          "label": "向下滑出",
+          "value": "toBottom"
+        }
+      ]
+    },
+    {
+      "default": 32,
+      "id": "exitDistancePx",
+      "label": "淡出滑动距离",
+      "max": 240,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": {
+        "easing": "easeInOut",
+        "kind": "easing"
+      },
+      "id": "exitCurve",
+      "label": "淡出曲线",
+      "type": "curve"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "DirectionalFadeTransition",
+      "id": "directional-fade-transition",
+      "kind": "controller",
+      "name": "方向淡入淡出",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "fade-transform",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "fade-opacity",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "tokenFamily"
+        }
+      ],
+      "parameters": [
+        "enterDurationUs",
+        "enterDirection",
+        "enterDistancePx",
+        "enterCurve",
+        "exitDurationUs",
+        "exitDirection",
+        "exitDistancePx",
+        "exitCurve"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "token.opacity",
+    "line.exit"
+  ],
+  "lineExit": {
+    "durationUs": 1500000
+  },
+  "emitters": []
+}

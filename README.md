@@ -14,8 +14,8 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 ```text
 .
 ├── .agents/skills/        # Agent 工作区 Skill（mkfx-v2-authoring）
-├── dist/                  # 27 个已打包的 .mkfx 效果包归档（可直接导入应用）
-├── packages/              # 27 个展开后的 SDK v2 示例效果包目录
+├── dist/                  # 28 个已打包的 .mkfx 效果包归档（可直接导入应用）
+├── packages/              # 28 个展开后的 SDK v2 示例效果包目录
 ├── docs/                  # SDK v2 API 完整参考与示例对照文档
 │   ├── script-sdk-v2.md
 │   └── api-sample-mapping.md
@@ -28,7 +28,7 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 
 ---
 
-## 示例效果包索引（`packages/` / `dist/`，共 27 个）
+## 示例效果包索引（`packages/` / `dist/`，共 28 个）
 
 | 目录 | `packageId` | 类型 | 核心特性 |
 | --- | --- | --- | --- |
@@ -39,6 +39,7 @@ MakoKaraGenerator 官方 MKFX 效果包示例仓库（SDK `2.0.x` / 包格式 `p
 | [`packages/BeatPulseNeon`](packages/BeatPulseNeon) | `makokara.sample.beat-pulse-neon` | 控制器 (`controller`) | 音频特征（含备用 BPM）驱动脉冲缩放、霓虹辉光与字后频谱条 |
 | [`packages/ChromaFireflyBokeh`](packages/ChromaFireflyBokeh) | `makokara.sample.chroma-firefly-bokeh` | 控制器 (`controller`) | 画布三分区背景取色自适应、`BehindText` 焦外散景 SVG 图集与 `AboveText` 萤火柔光微尾 |
 | [`packages/CyberCrtGlitch`](packages/CyberCrtGlitch) | `makokara.sample.cyber-crt-glitch` | 控制器 + 图 (`controller` + `graph`) | CRT 扫描线与 RGB 磷光格栅、音频触发块状撕裂色散与 `ExitReplica` 关机坍缩退场 |
+| [`packages/DirectionalFadeTransition`](packages/DirectionalFadeTransition) | `makokara.sample.directional-fade-transition` | 控制器 (`controller`) | 简洁整行方向淡入淡出，支持独立选择入场/出场滑动方向（原地/左/右/上/下）、距离与缓动曲线（含 `line.exit` 1.5s 退场副本） |
 | [`packages/EmberIgniteBurn`](packages/EmberIgniteBurn) | `makokara.sample.ember-ignite-burn` | 控制器 + 图 (`controller` + `graph`) | `SungCoverage` 8 邻域梯度燃烧前沿、音频调制 FBM 火舌热浪、`moltenGold`/`charredEmber` 双模态与燃尽退场 |
 | [`packages/FrostedGlassMaterial`](packages/FrostedGlassMaterial) | `makokara.sample.frosted-glass` | 材质 (`material`) | 大半径高斯模糊、微米晶粒散射、缎面高光与透明渐变兜底 |
 | [`packages/HoloPrismGlow`](packages/HoloPrismGlow) | `makokara.sample.holo-prism-glow` | 图效果 (`graph`) | 整行 `SungCoverage` 遮罩提取、Bloom、RGB 棱镜色散与全息流光 |
