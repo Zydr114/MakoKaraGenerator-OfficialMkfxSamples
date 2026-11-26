@@ -1,0 +1,338 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.wind-particle-transition",
+  "name": "风粒子聚散出入场",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/WindParticleTransition.cs",
+      "role": "csharp",
+      "sha256": "92c76c32d5483eeef4b90797f03b4e1c51a60b7ca0aff7b6fd42894c7eda72c2"
+    },
+    {
+      "path": "graphs/wind-token.graph.json",
+      "role": "graph",
+      "sha256": "2954ab742fcdb759aca392896976ee1caa31cd5b5aa6c7f58067f00ec64619b3"
+    },
+    {
+      "path": "shaders/wind-token.program.json",
+      "role": "shaderProgram",
+      "sha256": "789e93b6ff2108079236c41472dd328b5ca7292c93c3ac6a3e3ab2859f6f7118"
+    },
+    {
+      "path": "shaders/wind-token.sksl",
+      "role": "shader",
+      "sha256": "0823adc8b71c60dc39095543ca2ecb3805c9545014c33c9a038914414135c5b5"
+    },
+    {
+      "path": "assets/wind-grain.svg",
+      "role": "svg",
+      "sha256": "1976a9defb21077019ca0a5c17ee500e0fe6336626c71db5960b6e18da8d4da2"
+    },
+    {
+      "path": "resources/wind-grain.json",
+      "role": "svgResource",
+      "sha256": "0a9be0548a09cb50223974df26f66431f2923bea0a12a25d8f25f054094f64a1"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "c33ac005418d2327ee1644a8444d9cf5d5325d9ca0c0ad4073f6037f381b6d95"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 440000,
+      "id": "enterCharUs",
+      "label": "单字聚合入场时长",
+      "max": 1800000,
+      "min": 80000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 70000,
+      "id": "enterStaggerUs",
+      "label": "入场字间错峰延迟",
+      "max": 400000,
+      "min": 0,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 240,
+      "id": "enterReachPx",
+      "label": "入场风沙刮入距离",
+      "max": 520,
+      "min": 40,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 720000,
+      "id": "exitUs",
+      "label": "单字碎裂退场时长",
+      "max": 1800000,
+      "min": 120000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 1050000,
+      "id": "particleLifeUs",
+      "label": "碎裂粒子飘散寿命",
+      "max": 3500000,
+      "min": 250000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": "left",
+      "id": "exitWindDirection",
+      "label": "退场风向",
+      "type": "enum",
+      "values": [
+        {
+          "label": "向后（向左飘散）",
+          "value": "left"
+        },
+        {
+          "label": "向前（向右飘散）",
+          "value": "right"
+        }
+      ]
+    },
+    {
+      "default": 260,
+      "id": "windSpeedPx",
+      "label": "退场风速",
+      "max": 680,
+      "min": 40,
+      "type": "number",
+      "unit": "px/s"
+    },
+    {
+      "default": 34,
+      "id": "windLiftPx",
+      "label": "气流抬升速度",
+      "max": 160,
+      "min": -120,
+      "type": "number",
+      "unit": "px/s"
+    },
+    {
+      "default": 22,
+      "id": "turbulencePx",
+      "label": "风涡扰动幅度",
+      "max": 80,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 5.5,
+      "id": "grainSizePx",
+      "label": "字形碎裂晶格尺度",
+      "max": 14,
+      "min": 2.5,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 14,
+      "id": "particleSizePx",
+      "label": "风尘粒子大小",
+      "max": 36,
+      "min": 4,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 26,
+      "id": "particlesPerToken",
+      "label": "单字碎散粒子数",
+      "max": 60,
+      "min": 4,
+      "type": "integer"
+    },
+    {
+      "default": 0.72,
+      "id": "windRibbonOpacity",
+      "label": "风丝流线不透明度",
+      "max": 1,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": {
+        "a": 0.96,
+        "b": 1,
+        "g": 0.86,
+        "r": 0.45
+      },
+      "id": "particleColor",
+      "label": "粒子主色",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 0.92,
+        "b": 0.92,
+        "g": 0.98,
+        "r": 1
+      },
+      "id": "accentColor",
+      "label": "粒子高光辅色",
+      "type": "color"
+    },
+    {
+      "default": true,
+      "id": "dissolveGlow",
+      "label": "聚散边缘微光",
+      "type": "boolean"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "WindParticleTransition",
+      "id": "wind-particle-transition",
+      "kind": "controller",
+      "name": "风粒子聚散出入场",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "token-transform",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "token-opacity",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "token-shatter",
+          "kind": "ImageGraph",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "exit-dust-burst",
+          "kind": "Overlay",
+          "requires": [
+            "particles.burst"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "wind-streams",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.trails"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "wind-shards",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.sprites",
+            "resources.svg.atlas"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "wind-motes",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.dots"
+          ],
+          "target": "canvas"
+        }
+      ],
+      "parameters": [
+        "enterCharUs",
+        "enterStaggerUs",
+        "enterReachPx",
+        "exitUs",
+        "particleLifeUs",
+        "exitWindDirection",
+        "windSpeedPx",
+        "windLiftPx",
+        "turbulencePx",
+        "grainSizePx",
+        "particleSizePx",
+        "particlesPerToken",
+        "windRibbonOpacity",
+        "particleColor",
+        "accentColor",
+        "dissolveGlow"
+      ]
+    },
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "graph": "graphs/wind-token.graph.json",
+      "id": "wind-token",
+      "kind": "graph",
+      "name": "单字风蚀碎裂图",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "image",
+          "kind": "ImageGraph",
+          "requires": [],
+          "target": "tokenFamily"
+        }
+      ],
+      "parameters": []
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "token.opacity",
+    "style.glow",
+    "image.graph",
+    "line.exit",
+    "timeline.index",
+    "particles.burst",
+    "visuals.trails",
+    "visuals.sprites",
+    "visuals.dots",
+    "resources.svg.atlas"
+  ],
+  "lineExit": {
+    "durationUs": 1800000
+  },
+  "emitters": [
+    {
+      "id": "exit-dust-burst",
+      "kind": "burst",
+      "maxLifetimeUs": 5000000
+    }
+  ]
+}

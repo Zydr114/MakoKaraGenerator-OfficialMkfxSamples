@@ -1,0 +1,255 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.note-burst",
+  "name": "音符随唱爆发",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/NoteBurst.cs",
+      "role": "csharp",
+      "sha256": "798e2f8c2ce9ba2c67b1aa508cdb708eb9fc93dd120d8362942df091a4446754"
+    },
+    {
+      "path": "assets/note-single.svg",
+      "role": "svg",
+      "sha256": "19afacb5729a5ad88ddbd5b32e1dd3f5b3ebd25d835b4053ac4717211e91c333"
+    },
+    {
+      "path": "resources/note-single.json",
+      "role": "svgResource",
+      "sha256": "8e90b5f608085714de404054349add06e0894f4f2d92d597a8da040dcc339979"
+    },
+    {
+      "path": "assets/note-beamed.svg",
+      "role": "svg",
+      "sha256": "fadbbff14a5f7fdc795007b004c996c0df0c79268a3731da3fff035e1b63de90"
+    },
+    {
+      "path": "resources/note-beamed.json",
+      "role": "svgResource",
+      "sha256": "d657350c1f67975c78efff93de720e02941bfdea0629780cf570107506d9a70c"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "7351d9ea13ac132e6fc8e0d45ca0f8e8299a19a0afe480ce42ff15979a0762e3"
+    }
+  ],
+  "parameters": [
+    {
+      "default": 5,
+      "id": "burstCount",
+      "label": "单字爆发音符数",
+      "max": 12,
+      "min": 1,
+      "type": "integer"
+    },
+    {
+      "default": 650000,
+      "id": "lifeUs",
+      "label": "音符持续时长",
+      "max": 2000000,
+      "min": 200000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 32,
+      "id": "noteSizePx",
+      "label": "音符基准尺寸",
+      "max": 64,
+      "min": 10,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 370,
+      "id": "burstSpeedPx",
+      "label": "向上爆发初速度",
+      "max": 720,
+      "min": 60,
+      "type": "number",
+      "unit": "px/s"
+    },
+    {
+      "default": 2.4,
+      "id": "drag",
+      "label": "空气阻尼系数",
+      "max": 8,
+      "min": 0.2,
+      "type": "number"
+    },
+    {
+      "default": 46,
+      "id": "fanAngleDeg",
+      "label": "向上扇形扩散半角",
+      "max": 80,
+      "min": 0,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": 36,
+      "id": "spawnLiftPx",
+      "label": "出生位置上移偏移",
+      "max": 80,
+      "min": -20,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 12,
+      "id": "swayPx",
+      "label": "轻快横向摆动幅度",
+      "max": 40,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 22,
+      "id": "maxTiltDeg",
+      "label": "音符摇摆最大倾角",
+      "max": 60,
+      "min": 0,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": {
+        "a": 0.96,
+        "b": 0.72,
+        "g": 0.42,
+        "r": 1
+      },
+      "id": "noteColorA",
+      "label": "音符配色 A",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 0.96,
+        "b": 1,
+        "g": 0.88,
+        "r": 0.36
+      },
+      "id": "noteColorB",
+      "label": "音符配色 B",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 0.96,
+        "b": 0.42,
+        "g": 0.88,
+        "r": 1
+      },
+      "id": "noteColorC",
+      "label": "音符配色 C",
+      "type": "color"
+    },
+    {
+      "default": true,
+      "id": "sparkleDots",
+      "label": "伴随闪烁星点",
+      "type": "boolean"
+    },
+    {
+      "default": "above",
+      "id": "layer",
+      "label": "绘制层级",
+      "type": "enum",
+      "values": [
+        {
+          "label": "文字上方",
+          "value": "above"
+        },
+        {
+          "label": "文字后方",
+          "value": "behind"
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "NoteBurst",
+      "id": "note-burst",
+      "kind": "controller",
+      "name": "音符随唱爆发",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "note-burst",
+          "kind": "Overlay",
+          "requires": [
+            "particles.burst"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "notes",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.paths",
+            "resources.svg.vector"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "sparkles",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.dots"
+          ],
+          "target": "canvas"
+        }
+      ],
+      "parameters": [
+        "burstCount",
+        "lifeUs",
+        "noteSizePx",
+        "burstSpeedPx",
+        "drag",
+        "fanAngleDeg",
+        "spawnLiftPx",
+        "swayPx",
+        "maxTiltDeg",
+        "noteColorA",
+        "noteColorB",
+        "noteColorC",
+        "sparkleDots",
+        "layer"
+      ]
+    }
+  ],
+  "requires": [
+    "timeline.index",
+    "particles.burst",
+    "visuals.paths",
+    "visuals.dots",
+    "resources.svg.vector"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": [
+    {
+      "id": "note-burst",
+      "kind": "burst",
+      "maxLifetimeUs": 5000000
+    }
+  ]
+}

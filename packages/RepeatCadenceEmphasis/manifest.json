@@ -1,0 +1,263 @@
+{
+  "packageVersion": 3,
+  "packageId": "makokara.sample.repeat-cadence-emphasis",
+  "name": "重复词素递进强调",
+  "version": "1.0.0",
+  "sdkVersion": "2.0.0",
+  "shaderProfile": "skia-ganesh-3.119.4-v2",
+  "files": [
+    {
+      "path": "src/RepeatCadenceEmphasis.cs",
+      "role": "csharp",
+      "sha256": "819a5bead72c5f0da9e4b2434c10783943d7e263541378f26fefa6d6dd4f555b"
+    },
+    {
+      "path": "README.md",
+      "role": "asset",
+      "sha256": "b7deb685efaed159b83ff3f855ab0c74fc662010cb30e0a8a918e4de7658c5fe"
+    }
+  ],
+  "parameters": [
+    {
+      "default": "project",
+      "id": "scope",
+      "label": "重复统计范围",
+      "type": "enum",
+      "values": [
+        {
+          "label": "全曲范围",
+          "value": "project"
+        },
+        {
+          "label": "当前分支",
+          "value": "branch"
+        }
+      ]
+    },
+    {
+      "default": false,
+      "id": "caseSensitive",
+      "label": "区分英文字母大小写",
+      "type": "boolean"
+    },
+    {
+      "default": true,
+      "id": "ignorePunctuation",
+      "label": "忽略空白与纯标点词素",
+      "type": "boolean"
+    },
+    {
+      "default": 4,
+      "id": "maxEscalation",
+      "label": "最大递进阶数",
+      "max": 8,
+      "min": 1,
+      "type": "integer"
+    },
+    {
+      "default": 1.24,
+      "id": "basePopScale",
+      "label": "首次重复爆发比例",
+      "max": 2,
+      "min": 1,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": 0.16,
+      "id": "scaleStep",
+      "label": "每次递增加幅",
+      "max": 0.45,
+      "min": 0,
+      "type": "number",
+      "unit": "倍"
+    },
+    {
+      "default": 7.5,
+      "id": "tremorPx",
+      "label": "最高阶震颤幅度",
+      "max": 28,
+      "min": 0,
+      "type": "number",
+      "unit": "px"
+    },
+    {
+      "default": 8,
+      "id": "tiltDeg",
+      "label": "最高阶抖动倾角",
+      "max": 35,
+      "min": 0,
+      "type": "number",
+      "unit": "deg"
+    },
+    {
+      "default": 0.14,
+      "id": "squashAmount",
+      "label": "鼓面挤压拉伸强度",
+      "max": 0.4,
+      "min": 0,
+      "type": "number"
+    },
+    {
+      "default": 45000,
+      "id": "attackUs",
+      "label": "鼓点冲击起跳时长",
+      "max": 200000,
+      "min": 10000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": 460000,
+      "id": "decayUs",
+      "label": "震颤与冲击衰减时长",
+      "max": 1500000,
+      "min": 100000,
+      "type": "duration",
+      "unit": "us"
+    },
+    {
+      "default": "center",
+      "id": "anchor",
+      "label": "变形支点",
+      "type": "enum",
+      "values": [
+        {
+          "label": "字框中心",
+          "value": "center"
+        },
+        {
+          "label": "基线中心",
+          "value": "baseline"
+        },
+        {
+          "label": "字框底部",
+          "value": "bottom"
+        }
+      ]
+    },
+    {
+      "default": true,
+      "id": "glowEnabled",
+      "label": "递进热感辉光",
+      "type": "boolean"
+    },
+    {
+      "default": {
+        "a": 0.95,
+        "b": 0.28,
+        "g": 0.74,
+        "r": 1
+      },
+      "id": "lowRepeatColor",
+      "label": "初阶强调色",
+      "type": "color"
+    },
+    {
+      "default": {
+        "a": 1,
+        "b": 0.46,
+        "g": 0.18,
+        "r": 1
+      },
+      "id": "highRepeatColor",
+      "label": "高阶强调色",
+      "type": "color"
+    },
+    {
+      "default": true,
+      "id": "shockwaveRings",
+      "label": "字后鼓点冲击波环",
+      "type": "boolean"
+    }
+  ],
+  "exports": [
+    {
+      "bindingKinds": [
+        "project",
+        "branch",
+        "lines",
+        "tokens",
+        "clips",
+        "node"
+      ],
+      "entryType": "RepeatCadenceEmphasis",
+      "id": "repeat-cadence-emphasis",
+      "kind": "controller",
+      "name": "重复词素递进强调",
+      "outputs": [
+        {
+          "dependsOn": [],
+          "id": "repeat-transform",
+          "kind": "VisualTransform",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "repeat-glow",
+          "kind": "StyleModulation",
+          "requires": [],
+          "target": "tokenFamily"
+        },
+        {
+          "dependsOn": [],
+          "id": "impact-rings",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.trails"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "impact-ticks",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.segments"
+          ],
+          "target": "canvas"
+        },
+        {
+          "dependsOn": [],
+          "id": "impact-sparks",
+          "kind": "Overlay",
+          "requires": [
+            "visuals.dots"
+          ],
+          "target": "canvas"
+        }
+      ],
+      "parameters": [
+        "scope",
+        "caseSensitive",
+        "ignorePunctuation",
+        "maxEscalation",
+        "basePopScale",
+        "scaleStep",
+        "tremorPx",
+        "tiltDeg",
+        "squashAmount",
+        "attackUs",
+        "decayUs",
+        "anchor",
+        "glowEnabled",
+        "lowRepeatColor",
+        "highRepeatColor",
+        "shockwaveRings"
+      ]
+    }
+  ],
+  "requires": [
+    "token.affine",
+    "style.glow",
+    "timeline.index",
+    "visuals.trails",
+    "visuals.segments",
+    "visuals.dots"
+  ],
+  "lineExit": {
+    "durationUs": 0
+  },
+  "emitters": []
+}

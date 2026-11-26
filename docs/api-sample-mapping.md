@@ -1,10 +1,10 @@
 # SDK v2 API 与示例包对照索引
 
-本文档将 [SDK v2 完整 API 参考](script-sdk-v2.md) 中的核心能力、清单字段、C# 入口与纯资源图/着色器写法，逐一映射到 [`packages/`](../packages/) 下的 24 个官方示例包，方便按 API 查用法或按示例查规范。
+本文档将 [SDK v2 完整 API 参考](script-sdk-v2.md) 中的核心能力、清单字段、C# 入口与纯资源图/着色器写法，逐一映射到 [`packages/`](../packages/) 下的 27 个官方示例包，方便按 API 查用法或按示例查规范。
 
 ---
 
-## 1. 二十四个示例包总览
+## 1. 二十七个示例包总览
 
 | 目录 | `packageId` | 导出种类与目标 | 声明能力（`requires`） | 核心示范点 |
 | --- | --- | --- | --- | --- |
@@ -20,15 +20,18 @@
 | [`HoloPrismGlow`](../packages/HoloPrismGlow) | `makokara.sample.holo-prism-glow` | `graph` → `line` | `image.graph` | 整行 `TargetColor` + `SungCoverage` 遮罩、`Mask` → `Blur` → `RuntimeShader` 三节点 DAG、RGB 色散与虹彩 SkSL |
 | [`LiquidGlassMaterial`](../packages/LiquidGlassMaterial) | `makokara.sample.liquid-glass` | `material` → `region` (`fill`, `stroke`) | `[]` | `masked` 区域覆盖材质、`parameter:backdropSource` 条件输入（`BackgroundMedia` / `BackdropBelow`）、Blur + SkSL 折射、渐变 `fallback` |
 | [`MangaHalftonePop`](../packages/MangaHalftonePop) | `makokara.sample.manga-halftone-pop` | `graph` → `line` | `image.graph` | 零 C# 纯图实现 45°/15° 半调网点矩阵、Risograph 双色错版套印重影与硬边漫画斜线投影 |
+| [`NoteBurst`](../packages/NoteBurst) | `makokara.sample.note-burst` | `controller` → `canvas` (`Overlay`) | `timeline.index`、`particles.burst`、`visuals.paths`、`visuals.dots`、`resources.svg.vector` | `TokenStarted` 分层扇形向上爆发单音符（🎵）/连音符（🎶）静态 SVG 矢量与闪烁星点，短促弹跳阻尼消散 |
 | [`OpticalInkErosion`](../packages/OpticalInkErosion) | `makokara.sample.optical-ink-erosion` | `controller` + `graph` → `line` + `tokenFamily` + `canvas` | `token.opacity`、`token.affine`、`style.fill`、`style.stroke`、`style.glow`、`image.graph`、`line.exit`、`media.features`、`visuals.trails`、`visuals.dots` | `frame.Media.Sample` 32×18 网格 2×2 Lucas-Kanade 局部光流风场、SkSL 负空间侵蚀平流与历史积分墨丝 `DrawTrails`/`DrawDots` |
 | [`PetalFall`](../packages/PetalFall) | `makokara.sample.petal-fall` | `controller` → `canvas` (`Overlay`) | `particles.burst`、`visuals.paths`、`resources.svg.vector` | `TimelineSelector` + `EventBurstPlan`、`FinalGeometry.Lines` 行包围框映射、SVG 3D 翻转仿射、图层切换 |
 | [`RefractivePrismCrystal`](../packages/RefractivePrismCrystal) | `makokara.sample.refractive-prism-crystal` | `controller` + `graph` → `line` + `tokenFamily` | `token.opacity`、`style.fill`、`style.stroke`、`style.glow`、`image.graph`、`line.exit` | 弯月面背景折射、反差自适应极细描边、音节中心聚光穿透色散与 `ExitReplica` 亮度梯度碎化消融 |
+| [`RepeatCadenceEmphasis`](../packages/RepeatCadenceEmphasis) | `makokara.sample.repeat-cadence-emphasis` | `controller` → `tokenFamily` + `canvas` | `token.affine`、`style.glow`、`timeline.index`、`visuals.trails`、`visuals.segments`、`visuals.dots` | `TimelineIndex.Ordinal` 与词频归一化统计词素重复次数，随重复次数递进鼓点挤压拉伸、高频阻尼震颤、升温辉光与字后冲击波环/放射刻度 |
 | [`RubySplitEmphasis`](../packages/RubySplitEmphasis) | `makokara.sample.ruby-split-emphasis` | `controller` → `baseToken` + `cluster` | `token.affine`、`cluster.affine`、`style.glow` | `BaseTokenTarget` 与 `TextClusterTarget` 分离缩放、`SourceRubySegment` 分段时间表与未分段宽度切片兜底 |
 | [`SceneLitCastShadow`](../packages/SceneLitCastShadow) | `makokara.sample.scene-lit-cast-shadow` | `controller` + `graph` → `line` | `image.graph`、`media.features` | 四象限 `media.features`（350ms 窗口）主光源反演、互补阴影色推导与基线斜切压扁 `Transform` + `Blur` + `Blend` 立体投影 |
 | [`SceneWaterReflection`](../packages/SceneWaterReflection) | `makokara.sample.scene-water-reflection` | `controller` + `graph` → `line` | `image.graph`、`media.features` | 动态基线垂直镜像 `Transform` 矩阵注入、`Blur` + 水波 SkSL 扭曲 + `Blend`，结合 250ms `media.features` 水面明暗与波纹调制 |
 | [`SparkleWake`](../packages/SparkleWake) | `makokara.sample.sparkle-wake` | `controller` → `canvas` (`Overlay`) | `particles.continuous`、`visuals.paths`、`resources.svg.vector` | 播放头双色四角星芒尾迹、真实字形墨迹高度均匀分布与像素长度衰减控制 |
 | [`StarTrail`](../packages/StarTrail) | `makokara.sample.star-trail` | `controller` → `canvas` (`Overlay`) | `particles.continuous`、`visuals.trails`、`visuals.paths`、`resources.svg.vector` | 双连续发射器（`cursor`）、`BridgePolicy`、粒子 `GetTrail`、SVG 矢量、`DrawTrails` + `DrawPaths` |
 | [`UtopiaEmphasis`](../packages/UtopiaEmphasis) | `makokara.sample.utopia-emphasis` | `controller` → `tokenFamily` | `token.affine`、`style.glow` | `number` / `duration` / `enum` / `curve` / `boolean` / `color` 参数、瞬间突放回落、`SetGlow` |
+| [`WindParticleTransition`](../packages/WindParticleTransition) | `makokara.sample.wind-particle-transition` | `controller` + `graph` → `tokenFamily` + `canvas` | `token.affine`、`token.opacity`、`style.glow`、`image.graph`、`line.exit`、`timeline.index`、`particles.burst`、`visuals.trails`、`visuals.sprites`、`visuals.dots`、`resources.svg.atlas` | 行显现左侧风丝与自选色粒子刮入聚合入场；唱完词素经 Voronoi 尘粒 SkSL + `TokenCompleted` 爆发碎散向后飘远（含 `line.exit` 句尾解析续播） |
 | [`WordFlipTransition`](../packages/WordFlipTransition) | `makokara.sample.word-flip-transition` | `controller` → `tokenFamily` | `token.affine`、`token.opacity`、`line.exit` | 逐字三轴投影翻转出入场、`line.exit`（2.0s）对称翻折退场、长短行等比压缩与连字安全检查 |
 | [`WordScatterExit`](../packages/WordScatterExit) | `makokara.sample.word-scatter-exit` | `controller` + `graph` → `baseToken` + `cluster` + `tokenFamily` | `token.affine`、`cluster.affine`、`token.opacity`、`style.glow`、`image.graph`、`line.exit` | 逐字唱完旋转散落退出、注音字簇独立飘散、`line.exit` 退出副本、`BindGraph` 逐字高斯模糊 |
 | [`WordSwellEmphasis`](../packages/WordSwellEmphasis) | `makokara.sample.word-swell-emphasis` | `controller` → `tokenFamily` | `token.affine` | 演唱进度渐变膨胀、`IsSung` 唱完后平滑回落、组合平移与缩放矩阵、`CanTransformIndependently` |
@@ -41,7 +44,7 @@
 
 ### 2.1 清单根合同
 
-除 `WordFlipTransition`（`2000000`）、`OpticalInkErosion`（`1800000`）、`WordScatterExit`（`1500000`）、`EmberIgniteBurn`（`1200000`）、`RefractivePrismCrystal`（`900000`）与 `CyberCrtGlitch`（`600000`）声明非零 `"lineExit": {"durationUs": ...}` 与 `"line.exit"` 能力外，其余 18 个包均为零行退场；所有包均遵循 SDK v2 包格式 3 固定头部：
+除 `WordFlipTransition`（`2000000`）、`OpticalInkErosion`（`1800000`）、`WindParticleTransition`（`1800000`）、`WordScatterExit`（`1500000`）、`EmberIgniteBurn`（`1200000`）、`RefractivePrismCrystal`（`900000`）与 `CyberCrtGlitch`（`600000`）声明非零 `"lineExit": {"durationUs": ...}` 与 `"line.exit"` 能力外，其余 20 个包均为零行退场；所有包均遵循 SDK v2 包格式 3 固定头部：
 
 - `"packageVersion": 3`
 - `"sdkVersion": "2.0.0"`
@@ -53,13 +56,13 @@
 
 | `role` | 含义 | 本仓库实际示例 |
 | --- | --- | --- |
-| `csharp` | C# 14 控制器源码 | 除纯图/纯材质包（`FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial`、`MangaHalftonePop`）外的 20 个控制器/混合包各自的 `src/*.cs` |
-| `asset` | 随包分发的 `README.md` 等一般文件 | 全部 24 个包的 `README.md` |
-| `svg` | 静态 SVG 源文件 | `BeatEmberStorm`、`ChromaFireflyBokeh`、`PetalFall`、`SparkleWake`、`StarTrail` 各自的 `assets/*.svg` |
-| `svgResource` | SVG 使用描述 JSON（`mako-svg-static-1` 矢量或 `mode: "atlas"` 图集） | 矢量：`PetalFall`、`SparkleWake`、`StarTrail`；图集：`BeatEmberStorm`、`ChromaFireflyBokeh` 各自的 `resources/*.json` |
-| `graph` | 图像图定义 JSON（`graphVersion: 1`） | `AdaptiveChromeFoil`、`BeatKineticEcho`、`CyberCrtGlitch`、`EmberIgniteBurn`、`FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial`、`MangaHalftonePop`、`OpticalInkErosion`、`RefractivePrismCrystal`、`SceneLitCastShadow`、`SceneWaterReflection`、`WordScatterExit` 各自的 `graphs/*.graph.json` |
-| `shaderProgram` | SkSL 程序描述 JSON（`programVersion: 1`、`profile: "skia-raster-3.119.4-v1"`） | 上述除 `WordScatterExit` 外的 12 个含自定义着色器包各自的 `shaders/*.program.json` |
-| `shader` | SkSL 着色器源码 | 上述 12 个含自定义着色器包各自的 `shaders/*.sksl` |
+| `csharp` | C# 14 控制器源码 | 除纯图/纯材质包（`FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial`、`MangaHalftonePop`）外的 23 个控制器/混合包各自的 `src/*.cs` |
+| `asset` | 随包分发的 `README.md` 等一般文件 | 全部 27 个包的 `README.md` |
+| `svg` | 静态 SVG 源文件 | `BeatEmberStorm`、`ChromaFireflyBokeh`、`NoteBurst`、`PetalFall`、`SparkleWake`、`StarTrail`、`WindParticleTransition` 各自的 `assets/*.svg` |
+| `svgResource` | SVG 使用描述 JSON（`mako-svg-static-1` 矢量或 `mode: "atlas"` 图集） | 矢量：`NoteBurst`、`PetalFall`、`SparkleWake`、`StarTrail`；图集：`BeatEmberStorm`、`ChromaFireflyBokeh`、`WindParticleTransition` 各自的 `resources/*.json` |
+| `graph` | 图像图定义 JSON（`graphVersion: 1`） | `AdaptiveChromeFoil`、`BeatKineticEcho`、`CyberCrtGlitch`、`EmberIgniteBurn`、`FrostedGlassMaterial`、`HoloPrismGlow`、`LiquidGlassMaterial`、`MangaHalftonePop`、`OpticalInkErosion`、`RefractivePrismCrystal`、`SceneLitCastShadow`、`SceneWaterReflection`、`WindParticleTransition`、`WordScatterExit` 各自的 `graphs/*.graph.json` |
+| `shaderProgram` | SkSL 程序描述 JSON（`programVersion: 1`、`profile: "skia-raster-3.119.4-v1"`） | 上述除 `WordScatterExit` 外的 13 个含自定义着色器包各自的 `shaders/*.program.json` |
+| `shader` | SkSL 着色器源码 | 上述 13 个含自定义着色器包各自的 `shaders/*.sksl` |
 
 ### 2.3 参数类型（`parameters[].type`）对照
 
@@ -67,7 +70,7 @@
 
 | 清单 `type` | C# 读取方法 | 示例包位置 |
 | --- | --- | --- |
-| `number` | `GetNumber(id)` → `double` | 全部 24 个包均广泛使用（控制器读取或图/着色器参数绑定） |
+| `number` | `GetNumber(id)` → `double` | 全部 27 个包均广泛使用（控制器读取或图/着色器参数绑定） |
 | `integer` | `GetInteger(id)` → `long` | `AcousticRippleRain`（`rippleRings`、`splashCount`）、`BeatEmberStorm`（`burstMaxCount`）、`BeatPulseNeon`（`barCount`）、`ChromaFireflyBokeh`（`bokehBurstCount`）、`PetalFall`（`lineDensity`、`burstCount`） |
 | `duration` | `GetDuration(id)` → `long`（微秒） | `AcousticRippleRain`、`AdaptiveChromeFoil`（`envSmoothUs` 驱动 `mediaQueries` 窗口）、`BeatEmberStorm`、`ChromaFireflyBokeh`、`OpticalInkErosion`、`PetalFall`、`RefractivePrismCrystal`、`RubySplitEmphasis`、`SparkleWake`、`StarTrail`、`UtopiaEmphasis`、`WordFlipTransition`、`WordScatterExit`、`WordSwellEmphasis` |
 | `boolean` | `GetBoolean(id)` → `bool` | `AcousticRippleRain`、`BeatEmberStorm`、`BeatKineticEcho`、`BeatPulseNeon`、`ChromaFireflyBokeh`、`CyberCrtGlitch`、`RubySplitEmphasis`、`SceneLitCastShadow`、`UtopiaEmphasis`、`WordFlipTransition`、`WordScatterExit` |
@@ -98,7 +101,7 @@
 | `mediaQueries` + `frame.Media.Sample(...)` | 声明时域平滑窗口（固定或参数驱动 `envSmoothUs`）并在帧内采样 `Mean`/`MeanPremulY`/`PremulYVariance`（含 `Pending`/`Unavailable`/`NoMedia` 退化） | `AdaptiveChromeFoil`、`ChromaFireflyBokeh`、`OpticalInkErosion`、`SceneLitCastShadow`、`SceneWaterReflection` |
 | `source.Audio.GetRange(...)` & `RateTrack` | 在 `Declare` 阶段按时间片扫描全曲音频构建分段线性变速发射轨（含无音频 `fallbackBpm` 退化） | [`BeatEmberStorm.cs`](../packages/BeatEmberStorm/src/BeatEmberStorm.cs) |
 | `frame.Audio.GetAt(timeUs)` & `AudioAvailability` | 读取 `BassLevel` / `Pulse` / `BeatPhase`，并在无分析时按 `fallbackBpm` 降级 | `BeatPulseNeon`、`BeatKineticEcho`、`CyberCrtGlitch`、`EmberIgniteBurn`、`AcousticRippleRain` |
-| `source.Timeline` & `TimelineSelector` | 在 `Declare` 阶段查询 `TokenStarted` / `TokenCompleted` / `BindingEntered` 源事件构建 `EventBurstPlan` | `PetalFall`、`AcousticRippleRain`、`BeatEmberStorm`、`ChromaFireflyBokeh` |
+| `source.Timeline` & `TimelineSelector` / `TimelineIndex.Ordinal` | 在 `Declare` 阶段查询 `TokenStarted` / `TokenCompleted` 源事件构建 `EventBurstPlan`，或统计相同词素的历史重复演唱次数 | `PetalFall`、`AcousticRippleRain`、`BeatEmberStorm`、`ChromaFireflyBokeh`、`NoteBurst`、`WindParticleTransition`、`RepeatCadenceEmphasis` |
 | `CursorEmissionPlan` / `EventBurstPlan` / `ParticleSpec` | 声明连续播放头发射（含 `BridgePolicy`）与事件爆发粒子 | `StarTrail`、`SparkleWake`、`PetalFall`、`BeatEmberStorm`、`ChromaFireflyBokeh`、`AcousticRippleRain` |
 | `frame.Particles.Alive` / `Births` / `GetTrail(id)` | 晚期绘制读取存活粒子、出生窗历史与宿主解析拖尾 | `StarTrail`、`SparkleWake`、`PetalFall`、`BeatEmberStorm`、`ChromaFireflyBokeh`、`AcousticRippleRain` |
 | `frame.FinalGeometry.Playback.Cursors` & `Lines` (`MapPoint`) | 读取最终实时播放头坐标与行包围框坐标映射（跟随入场/变换） | `StarTrail`、`SparkleWake`、`PetalFall`、`BeatPulseNeon` |
@@ -135,14 +138,13 @@
 - **多阶段时序/媒体感知混合图包（`controller` + `graph`）**：
   - **`CyberCrtGlitch`** / **`EmberIgniteBurn`**：控制器读取 `AudioFeatures`（含 `fallbackBpm` 降级）与 `ExitReplica` 阶段进度，通过 `GraphUniformValues` 驱动 CRT 故障撕裂/关机坍缩与 `SungCoverage` 8 邻域梯度 FBM 燃边；
   - **`OpticalInkErosion`** / **`RefractivePrismCrystal`**：结合 `TargetColor`、`SungCoverage` 与可选背景输入实现光流墨迹平流侵蚀与音节聚光晶体折射，并通过 `OutputMode.Transparent` 逻辑保证透明导出稳定通过；
-  - **`WordScatterExit`（`token-blur`）**：额外导出 `target: "tokenFamily"`，由 `Blur` 连接单位 `Transform`（`fit`）组成，在 `Evaluate` 动态 `BindGraph` 给退场字族。
+  - **`WordScatterExit`（`token-blur`）** / **`WindParticleTransition`（`wind-token`）**：额外导出 `target: "tokenFamily"`，末端串联全画布 `outputBounds` 单位 `Transform`（`fit`）以防裁切同行未退场字符，在 `Evaluate` 动态 `BindGraph` 给过渡字族做逐字高斯模糊或 Voronoi 风蚀碎裂。
 
 ---
 
-## 5. 主文档中尚未在本批 24 例演示的进阶能力
+## 5. 主文档中尚未在本批 27 例演示的进阶能力
 
-本仓库 24 个示例包已覆盖绝大部分 SDK v2 能力；如需查阅少数尚未收录的高阶特性，可直接定位到 [script-sdk-v2.md](script-sdk-v2.md) 对应章节与主仓库参考包：
+本仓库 27 个示例包已覆盖绝大部分 SDK v2 能力；如需查阅少数尚未收录的高阶特性，可直接定位到 [script-sdk-v2.md](script-sdk-v2.md) 对应章节与主仓库参考包：
 
-- **重复演唱次数索引（`TimelineIndex.Ordinal`）**：见 [script-sdk-v2.md §12 时间线与源索引](script-sdk-v2.md#12-时间线与源索引)（主仓库对照：`RepeatEmphasis`）。
-- **PNG 位图精灵（`DrawSprites`、`Sprite`）**：见 [script-sdk-v2.md §14.2 图元与方法](script-sdk-v2.md#142-图元与方法)（主仓库对照：`SpriteTrail`；SVG 图集 `mode: "atlas"` + `DrawAtlasSprites` 已有 `BeatEmberStorm`、`ChromaFireflyBokeh` 演示）。
+- **PNG 位图精灵（`DrawSprites`、`Sprite`）**：见 [script-sdk-v2.md §14.2 图元与方法](script-sdk-v2.md#142-图元与方法)（主仓库对照：`SpriteTrail`；SVG 图集 `mode: "atlas"` + `DrawAtlasSprites` 已有 `BeatEmberStorm`、`ChromaFireflyBokeh`、`WindParticleTransition` 演示）。
 - **独立标点/分组目标（`TextMarkTarget`、`TextTarget.Group`）**：见 [script-sdk-v2.md §7.3 行、标记和组](script-sdk-v2.md#73-行标记和组) 与 [§8.1 选择目标](script-sdk-v2.md#81-选择目标)。

@@ -1,0 +1,86 @@
+{
+  "graphVersion": 1,
+  "id": "wind-token",
+  "inputs": [
+    {
+      "id": "original",
+      "source": "TargetColor",
+      "type": "color",
+      "availability": "required",
+      "backgroundRequirement": "none",
+      "space": "canvas",
+      "capture": {
+        "includeRuby": true,
+        "includeStroke": true,
+        "includeShadow": true,
+        "includeGlow": true,
+        "includeDescendantGroups": false,
+        "includeOwnedOverlay": false,
+        "region": "fillAndStroke"
+      }
+    }
+  ],
+  "parameters": [],
+  "nodes": [
+    {
+      "id": "shatter",
+      "op": "RuntimeShader",
+      "program": "shaders/wind-token.program.json",
+      "children": {
+        "original": "input:original"
+      },
+      "uniforms": {
+        "timeSeconds": "host:timeSeconds",
+        "mode": 1.0,
+        "progress": 0.0,
+        "windDirX": -1.0,
+        "windLift": 26.0,
+        "grainSizePx": 5.5,
+        "windSeed": 0.0,
+        "tokenRect": [0.0, 0.0, 100.0, 100.0],
+        "particleColor": {
+          "r": 0.52,
+          "g": 0.88,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "accentColor": {
+          "r": 1.0,
+          "g": 0.97,
+          "b": 0.88,
+          "a": 1.0
+        }
+      },
+      "outputType": "color",
+      "bounds": {
+        "expandPx": 28,
+        "maxExpandPx": 28,
+        "maxSampleOffsetPx": 28
+      },
+      "edge": "transparent"
+    },
+    {
+      "id": "fit",
+      "op": "Transform",
+      "input": "node:shatter",
+      "matrix": [1, 0, 0, 1, 0, 0],
+      "outputBounds": [0, 0, 1, 1],
+      "bounds": {
+        "expandPx": 0,
+        "maxExpandPx": 0,
+        "maxSampleOffsetPx": 0
+      },
+      "edge": "transparent"
+    }
+  ],
+  "output": "node:fit",
+  "anchorMode": "ColorOnly",
+  "bounds": {
+    "space": "canvas",
+    "source": "targetRegion",
+    "maxExpandPx": 32
+  },
+  "composite": {
+    "mode": "sourceOver"
+  }
+}

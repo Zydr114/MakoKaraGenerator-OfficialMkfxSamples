@@ -1,0 +1,34 @@
+{
+  "svgResourceVersion": 1,
+  "id": "wind-grain",
+  "source": "assets/wind-grain.svg",
+  "profile": "mako-svg-static-1",
+  "mode": "atlas",
+  "viewport": {
+    "width": 128,
+    "height": 128
+  },
+  "fonts": [],
+  "images": [],
+  "atlas": {
+    "variants": [
+      {
+        "id": "small",
+        "width": 32,
+        "height": 32
+      },
+      {
+        "id": "medium",
+        "width": 64,
+        "height": 64
+      },
+      {
+        "id": "large",
+        "width": 128,
+        "height": 128
+      }
+    ],
+    "paddingPx": 4,
+    "mipmaps": true
+  }
+}

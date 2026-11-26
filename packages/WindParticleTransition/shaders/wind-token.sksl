@@ -1,0 +1,171 @@
+uniform float timeSeconds;
+uniform float mode;
+uniform float progress;
+uniform float windDirX;
+uniform float windLift;
+uniform float grainSizePx;
+uniform float windSeed;
+uniform float4 tokenRect;
+layout(color) uniform float4 particleColor;
+layout(color) uniform float4 accentColor;
+
+uniform shader original;
+
+float hash21(float2 p) {
+    float3 p3 = fract(float3(p.xyx) * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+float2 hash22(float2 p) {
+    float3 p3 = fract(float3(p.xyx) * float3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.xx + p3.yz) * p3.zy);
+}
+
+float vnoise(float2 p) {
+    float2 i = floor(p);
+    float2 f = fract(p);
+    float2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + float2(1.0, 0.0));
+    float c = hash21(i + float2(0.0, 1.0));
+    float d = hash21(i + float2(1.0, 1.0));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+float fbm(float2 p) {
+    float sum = 0.0;
+    float amp = 0.52;
+    const float2x2 rot = float2x2(0.80, -0.60, 0.60, 0.80);
+    for (int i = 0; i < 3; i++) {
+        sum += amp * vnoise(p);
+        p = rot * p * 2.02 + float2(13.7, 29.3);
+        amp *= 0.5;
+    }
+    return sum;
+}
+
+// 有机抖动 Voronoi 尘粒晶格（返回 x=晶粒随机ID，y=距晶粒中心归一化距离），消除方块像素感
+float2 voronoiDust(float2 p, float scalePx, float seedOffset) {
+    // 沿风向微拉伸比例，让碎粒更贴合疾风颗粒形态
+    float2 q = p / float2(scalePx * 1.18, scalePx * 0.86) + float2(seedOffset * 23.1, seedOffset * 17.7);
+    float2 n = floor(q);
+    float2 f = fract(q);
+    float minDist = 8.0;
+    float cellId = 0.5;
+    for (int j = -1; j <= 1; j++) {
+        for (int i = -1; i <= 1; i++) {
+            float2 g = float2(float(i), float(j));
+            float2 o = hash22(n + g);
+            float2 r = g + (0.14 + 0.72 * o) - f;
+            float d = dot(r, r);
+            if (d < minDist) {
+                minDist = d;
+                cellId = hash21(n + g + float2(3.7, 9.1));
+            }
+        }
+    }
+    return float2(cellId, sqrt(minDist));
+}
+
+float3 straightRgb(half4 s) {
+    return s.a > 0.0001 ? clamp(float3(s.rgb) / float(s.a), 0.0, 1.0) : float3(0.0);
+}
+
+half4 main(float2 p) {
+    float u = clamp(progress, 0.0, 1.0);
+    float2 rectSize = max(tokenRect.zw - tokenRect.xy, float2(10.0));
+    float2 uv = (p - tokenRect.xy) / rectSize;
+
+    float cellSize = clamp(grainSizePx, 2.5, 14.0);
+    float2 dustCoarse = voronoiDust(p, cellSize, windSeed);
+    float2 dustFine = voronoiDust(p, max(2.2, cellSize * 0.56), windSeed + 4.3);
+    float cell = dustCoarse.x;
+    float fineCell = dustFine.x;
+    float grainVal = mix(cell, fineCell, 0.38);
+    // 圆润尘粒形状因子：中心实、边缘柔，碎裂时自然断开成一颗颗独立风沙尘粒
+    float beadShape = 1.0 - smoothstep(0.24, 0.72, mix(dustCoarse.y, dustFine.y, 0.35));
+
+    float liftSign = clamp(windLift / 48.0, -1.0, 1.0);
+
+    if (mode < 0.0) {
+        // 入场：风与粒子从左侧刮入并由左向右聚合成清晰字形
+        if (u <= 0.002) {
+            return half4(0.0);
+        }
+        if (u >= 0.998) {
+            return original.eval(p);
+        }
+
+        float gust = fbm(p * float2(0.025, 0.082) + float2(-timeSeconds * 3.4, windSeed * 9.1));
+        float sweepFront = u * 1.56 - 0.22;
+        float localU = clamp((sweepFront - uv.x * 0.58 + (gust - 0.5) * 0.28 + (grainVal - 0.5) * 0.22) * 2.35, 0.0, 1.0);
+        float remain = 1.0 - localU;
+
+        // 未凝聚的尘粒向左侧拉扯，随 localU 趋近 1 迅速回位锁定
+        float shiftX = clamp(remain * remain * 24.0 * (0.55 + 0.85 * cell), 0.0, 25.0);
+        float shiftY = clamp((gust - 0.5) * 11.0 * remain - liftSign * 4.5 * remain * remain, -14.0, 14.0);
+        float2 sampleP = p + float2(shiftX, shiftY);
+
+        half4 orig = original.eval(sampleP);
+        float origA = clamp(float(orig.a), 0.0, 1.0);
+        if (origA <= 0.002) {
+            return half4(0.0);
+        }
+
+        // 前期呈现独立圆润沙粒，随 localU 增大沙粒融合成完整实心笔画
+        float particleBias = mix(grainVal * 0.72 + beadShape * 0.28, grainVal, smoothstep(0.55, 0.92, localU));
+        float threshold = 1.0 - localU * 1.18;
+        float solidMask = smoothstep(threshold - 0.13, threshold + 0.08, particleBias);
+        float fadeIn = smoothstep(0.0, 0.16, localU);
+        float outAlpha = clamp(origA * solidMask * fadeIn, 0.0, 1.0);
+        if (outAlpha <= 0.002) {
+            return half4(0.0);
+        }
+
+        float3 baseRgb = straightRgb(orig);
+        float3 dustRgb = mix(particleColor.rgb, accentColor.rgb, fineCell * 0.65 + beadShape * 0.35);
+        float dustRim = clamp(4.2 * localU * (1.0 - localU) * (0.72 + 0.45 * beadShape) + remain * 0.62, 0.0, 1.0);
+        float3 rgb = mix(baseRgb, dustRgb, dustRim * 0.90);
+        return half4(clamp(rgb, 0.0, 1.0) * outAlpha, outAlpha);
+    }
+
+    // 退场：已唱完的字在风中碎裂成有机尘粒并沿风向飘散
+    if (u <= 0.002) {
+        return original.eval(p);
+    }
+    if (u >= 0.998) {
+        return half4(0.0);
+    }
+
+    float dirX = windDirX < 0.0 ? -1.0 : 1.0;
+    float gust = fbm(p * float2(0.028, 0.088) + float2(-dirX * timeSeconds * 3.8, windSeed * 15.7));
+    float edgeCoord = dirX < 0.0 ? uv.x : (1.0 - uv.x);
+    float localT = clamp((u * 1.56 - edgeCoord * 0.52 + (gust - 0.5) * 0.26 + (grainVal - 0.5) * 0.24) * 2.20, 0.0, 1.0);
+
+    float driftX = clamp(localT * localT * 24.0 * (0.50 + 0.90 * cell), 0.0, 25.0);
+    float driftY = clamp(liftSign * localT * (6.5 + 7.5 * cell) + (gust - 0.5) * 10.5 * localT, -15.0, 15.0);
+    float2 sampleP = p + float2(-dirX * driftX, driftY);
+
+    half4 orig = original.eval(sampleP);
+    float origA = clamp(float(orig.a), 0.0, 1.0);
+    if (origA <= 0.002) {
+        return half4(0.0);
+    }
+
+    // 随 localT 增大，笔画先断成独立圆润尘粒再逐粒吹散
+    float particleBias = mix(grainVal, grainVal * 0.68 + beadShape * 0.32, smoothstep(0.08, 0.48, localT));
+    float keep = 1.0 - smoothstep(particleBias - 0.09, particleBias + 0.13, localT * 1.18);
+    float tailFade = 1.0 - smoothstep(0.72, 1.0, localT);
+    float outAlpha = clamp(origA * keep * tailFade, 0.0, 1.0);
+    if (outAlpha <= 0.002) {
+        return half4(0.0);
+    }
+
+    float3 baseRgb = straightRgb(orig);
+    float3 dustRgb = mix(particleColor.rgb, accentColor.rgb, fineCell * 0.65 + beadShape * 0.35);
+    float shatterGlow = clamp(smoothstep(0.05, 0.52, localT) * (0.76 + 0.45 * (1.0 - keep)), 0.0, 1.0);
+    float3 rgb = mix(baseRgb, dustRgb, shatterGlow * 0.94);
+    return half4(clamp(rgb, 0.0, 1.0) * outAlpha, outAlpha);
+}

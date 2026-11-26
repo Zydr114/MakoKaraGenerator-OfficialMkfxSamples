@@ -25,6 +25,10 @@ internal static class Scenarios
     private static readonly long[] RippleTimes = [2_380_000, 2_560_000, 3_120_000, 4_900_000, 6_400_000];
     private static readonly long[] CrtExitTimes = [2_100_000, 3_250_000, 5_180_000, 5_420_000, 6_400_000];
     private static readonly long[] EmberExitTimes = [2_750_000, 3_250_000, 4_900_000, 5_650_000, 6_400_000];
+    private static readonly long[] WindTransitionTimes = [2_220_000, 2_420_000, 2_820_000, 3_750_000, 5_220_000, 5_450_000];
+    private static readonly long[] RepeatTimes = [2_620_000, 8_600_000, 14_600_000, 16_600_000];
+    private static readonly long[] RepeatChorusTimes = [2_600_000, 5_600_000, 8_600_000, 11_600_000, 14_600_000];
+    private static readonly long[] NoteBurstTimes = [2_120_000, 2_620_000, 3_180_000, 4_650_000, 6_150_000];
 
     internal static IReadOnlyList<Scenario> All { get; } =
     [
@@ -245,6 +249,36 @@ internal static class Scenarios
         new("SceneLitCastShadow", "graph-standalone",
             (project, package) => WithInstance(project, package, "cast-shadow-line"),
             DefaultTimes),
+
+        new("WindParticleTransition", "default",
+            (project, package) => WithInstance(project, package, "wind-particle-transition"),
+            WindTransitionTimes),
+        new("WindParticleTransition", "golden-breeze",
+            (project, package) => WithInstance(project, package, "wind-particle-transition",
+                """{"particleColor":{"r":1,"g":0.74,"b":0.28,"a":0.96},"accentColor":{"r":1,"g":0.42,"b":0.58,"a":0.94}}"""),
+            WindTransitionTimes),
+        new("WindParticleTransition", "with-ruby",
+            (project, package) => WithInstance(WithSampleRuby(project), package, "wind-particle-transition"),
+            WindTransitionTimes),
+
+        new("RepeatCadenceEmphasis", "default",
+            (project, package) => WithInstance(project, package, "repeat-cadence-emphasis"),
+            RepeatTimes),
+        new("RepeatCadenceEmphasis", "exact-ordinal",
+            (project, package) => WithInstance(project, package, "repeat-cadence-emphasis",
+                """{"caseSensitive":true}"""),
+            RepeatTimes),
+        new("RepeatCadenceEmphasis", "high-tier-chorus",
+            (project, package) => WithInstance(WithRepeatedChorus(project), package, "repeat-cadence-emphasis"),
+            RepeatChorusTimes),
+
+        new("NoteBurst", "default",
+            (project, package) => WithInstance(project, package, "note-burst"),
+            NoteBurstTimes),
+        new("NoteBurst", "behind",
+            (project, package) => WithInstance(project, package, "note-burst",
+                """{"layer":"behind","burstCount":7,"noteSizePx":32}"""),
+            NoteBurstTimes),
     ];
 
     internal static ProjectAudioAnalysis CreateSyntheticAudioAnalysis(long durationUs)
@@ -341,6 +375,26 @@ internal static class Scenarios
         };
         var updatedLine0 = line0 with { RubyAnnotations = [ruby0, ruby2, ruby3] };
         var updatedBranch = branch with { Lines = branch.Lines.SetItem(0, updatedLine0) };
+        var updatedLyrics = project.Lyrics with { Branches = project.Lyrics.Branches.SetItem(0, updatedBranch) };
+        return project with { Lyrics = updatedLyrics };
+    }
+
+    private static Project WithRepeatedChorus(Project project)
+    {
+        // 让每一行第 2 个词素均为 "光"（2.5s、5.5s、8.5s、11.5s、14.5s 依次达到第 1～5 次出现），完整验证最高阶重复强调。
+        var branch = project.Lyrics.Branches[0];
+        var lines = branch.Lines;
+        for (int row = 0; row < lines.Length && row < 5; row++)
+        {
+            var line = lines[row];
+            if (line.Tokens.Length < 2)
+                continue;
+            var t1 = line.Tokens[1];
+            var updatedTokens = line.Tokens.SetItem(1, t1 with { Text = "光" });
+            string text = string.Concat(updatedTokens.Select(t => t.Text));
+            lines = lines.SetItem(row, line with { Text = text, Tokens = updatedTokens });
+        }
+        var updatedBranch = branch with { Lines = lines };
         var updatedLyrics = project.Lyrics with { Branches = project.Lyrics.Branches.SetItem(0, updatedBranch) };
         return project with { Lyrics = updatedLyrics };
     }

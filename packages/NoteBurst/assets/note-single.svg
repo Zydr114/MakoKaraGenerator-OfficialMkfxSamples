@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="noteSingleFill" gradientUnits="objectBoundingBox" x1="0.15" y1="0.1" x2="0.85" y2="0.95">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="0.58" stop-color="#f7fbff" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#dcecff" stop-opacity="0.95"/>
+    </linearGradient>
+    <radialGradient id="noteSingleHalo" gradientUnits="objectBoundingBox" cx="0.46" cy="0.54" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.34"/>
+      <stop offset="0.65" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="48" cy="54" r="46" fill="url(#noteSingleHalo)"/>
+  <path d="M52 14 C68 20 86 30 83 48 C81 58 73 64 65 66 C71 58 74 50 71 42 C68 35 60 32 52 30 L52 72 C52 84 39 92 26 89 C14 86 10 75 16 66 C22 57 34 55 44 61 L44 14 Z" fill="url(#noteSingleFill)" stroke="#ffffff" stroke-opacity="0.82" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M22 72 C24 66 32 63 39 65 C34 68 28 71 25 76 C23 76 21 74 22 72 Z" fill="#ffffff" fill-opacity="0.92"/>
+</svg>
